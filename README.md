@@ -4,7 +4,7 @@ Simple configuration management with python
 ## Installation
 ```shell
 # released version
-pip install simpleconf
+pip install python-simpleconf
 # lastest version
 pip install git+https://github.com/pwwang/simpleconf
 ```

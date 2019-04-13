@@ -14,7 +14,7 @@ author_email = "pwwang@pwwang.com"
 keywords = ["configuration", "settings"]
 
 setup(
-    name="simpleconf",
+    name="python-simpleconf",
     version=VERSION,
     description="Simple configuration management with python",
     author=author,
