@@ -2,21 +2,22 @@ VERSION = '0.0.1'
 
 from os import path
 from box import ConfigBox
+from collections import OrderedDict
 
 class FormatNotSupported(Exception):
 	pass
 
 class Loader(object):
 
-	@staticmethod
-	def keyupper(dictval):
-		return {k.upper() for k, v in dictval.items()}
-
-	def __init__(self, cfile):
-		self.config  = self.prepare(self.load(cfile))
+	def __init__(self, cfile, with_profile):
+		self.with_profile = with_profile
+		self.config       = self.prepare(self.load(cfile))
 
 	def prepare(self, config):
-		return {key.upper(): {k.upper():v for k, v in val.items()} for key, val in config.items()}
+		if self.with_profile:
+			return {key.upper(): {k.upper():v for k, v in val.items()} for key, val in config.items()}
+		else:
+			return {key.upper(): val for key, val in config.items()}
 	
 	def load(self, cfile):
 		pass
@@ -33,6 +34,10 @@ class IniLoader(Loader):
 		
 		config = ConfigParser()
 		config.read(path.expanduser(cfile))
+
+		if not self.with_profile:
+			return config.defaults()
+
 		ret = {sec: dict(config.items(sec)) for sec in config.sections()}
 		ret['DEFAULT'] = config.defaults()
 		return ret
@@ -48,6 +53,10 @@ class EnvLoader(Loader):
 		
 		# DEFAULT_A = 1
 		config = DotEnv(path.expanduser(cfile)).dict()
+		
+		if not self.with_profile:
+			return config
+			
 		ret = {}
 		for key, val in config.items():
 			if '_' not in key:
@@ -58,6 +67,7 @@ class EnvLoader(Loader):
 			else:
 				ret[profile][realkey] = val
 		return ret
+
 
 class OsEnvLoader(Loader):
 
@@ -71,6 +81,11 @@ class OsEnvLoader(Loader):
 			if not key.startswith(prefix):
 				continue
 			key = key[len(prefix):]
+
+			if not self.with_profile:
+				config[key] = val
+				continue
+
 			if '_' not in key:
 				continue
 			profile, realkey = key.split('_', 1)
@@ -140,11 +155,12 @@ Loaders = dict(
 
 class Config(ConfigBox):
 	
-	def __init__(self):
+	def __init__(self, with_profile = True):
 		super(Config, self).__init__()
 		self.__dict__['_protected'] = dict(
-			profile = 'DEFAULT',
-			cached  = {}
+			with_profile = with_profile,
+			profile      = 'DEFAULT',
+			cached       = OrderedDict()
 		)
 
 	def get(self, key, default = None, cast = None):
@@ -162,10 +178,17 @@ class Config(ConfigBox):
 				name = repr(name)
 			else:
 				if name not in self._protected['cached']:
-					self._protected['cached'][name] = Loaders[ext](name).config
-			self.update(self._protected['cached'][name].get(self._protected['profile'], {}))
+					self._protected['cached'][name] = Loaders[ext](name, self._protected['with_profile']).config
+
+			if self._protected['with_profile']:
+				self.update(self._protected['cached'][name].get(self._protected['profile'], {}))
+			else:
+				self.update(self._protected['cached'][name])
 	
 	def _use(self, profile = 'DEFAULT'):
+		if not self._protected['with_profile']:
+			raise ValueError('Unable to switch profile, this configuration is set without profile.')
+
 		profile = profile.upper()
 
 		if profile == self._protected['profile']:
