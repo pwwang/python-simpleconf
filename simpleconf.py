@@ -1,4 +1,4 @@
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 
 from os import path
 from box import ConfigBox
