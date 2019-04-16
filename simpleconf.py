@@ -1,5 +1,6 @@
 VERSION = '0.0.2'
 
+import collections
 from os import path
 from box import ConfigBox
 from collections import OrderedDict
@@ -9,12 +10,15 @@ class FormatNotSupported(Exception):
 
 class Loader(object):
 
-	def __init__(self, cfile, with_profile):
-		self.with_profile = with_profile
-		self.config       = self.prepare(self.load(cfile))
+	def __init__(self, cfile, with_profile, case_sensitive):
+		self.with_profile   = with_profile
+		self.case_sensitive = case_sensitive
+		self.config         = self.prepare(self.load(cfile))
 
 	def prepare(self, config):
-		if self.with_profile:
+		if self.case_sensitive:
+			return config
+		elif self.with_profile:
 			return {key.upper(): {k.upper():v for k, v in val.items()} for key, val in config.items()}
 		else:
 			return {key.upper(): val for key, val in config.items()}
@@ -25,6 +29,10 @@ class Loader(object):
 class IniLoader(Loader):
 
 	def load(self, cfile):
+		cfile = path.expanduser(cfile)
+		if not path.isfile(cfile):
+			return {}
+
 		try:
 			from ConfigParser import ConfigParser
 		except ImportError:
@@ -33,26 +41,30 @@ class IniLoader(Loader):
 			raise FormatNotSupported('.ini/.cfg/.config, need ConfigParser.')
 		
 		config = ConfigParser()
-		config.read(path.expanduser(cfile))
+		config.read(cfile)
 
 		if not self.with_profile:
 			return config.defaults()
 
 		ret = {sec: dict(config.items(sec)) for sec in config.sections()}
-		ret['DEFAULT'] = config.defaults()
+		ret['default'] = config.defaults()
 		return ret
 
 class EnvLoader(Loader):
 
 	def load(self, cfile):
 
+		cfile = path.expanduser(cfile)
+		if not path.isfile(cfile):
+			return {}
+
 		try:
 			from dotenv.main import DotEnv
 		except ImportError:
 			raise FormatNotSupported('.env, need python-dotenv.')
 		
-		# DEFAULT_A = 1
-		config = DotEnv(path.expanduser(cfile)).dict()
+		# default_A = 1
+		config = DotEnv(cfile).dict()
 		
 		if not self.with_profile:
 			return config
@@ -98,14 +110,16 @@ class OsEnvLoader(Loader):
 class YamlLoader(Loader):
 
 	def load(self, cfile):
-		self.nosection = True
+		cfile = path.expanduser(cfile)
+		if not path.isfile(cfile):
+			return {}
 
 		try:
 			import yaml
 		except ImportError:
 			raise FormatNotSupported('.yaml, need PyYAML.')
 
-		with open(path.expanduser(cfile)) as f:
+		with open(cfile) as f:
 			config = yaml.load(f, Loader = yaml.BaseLoader)
 		
 		return config
@@ -113,10 +127,12 @@ class YamlLoader(Loader):
 class JsonLoader(Loader):
 
 	def load(self, cfile):
-		self.nosection = True
+		cfile = path.expanduser(cfile)
+		if not path.isfile(cfile):
+			return {}
 
 		import json
-		with open(path.expanduser(cfile)) as f:
+		with open(cfile) as f:
 			config = json.load(f)
 
 		return config
@@ -124,13 +140,17 @@ class JsonLoader(Loader):
 class TomlLoader(Loader):
 
 	def load(self, cfile):
+		
+		cfile = path.expanduser(cfile)
+		if not path.isfile(cfile):
+			return {}
 
 		try:
 			import toml
 		except ImportError:
 			raise FormatNotSupported('.toml, need toml.')
 
-		with open(path.expanduser(cfile)) as f:
+		with open(cfile) as f:
 			config = toml.load(f)
 		return config
 
@@ -155,12 +175,13 @@ Loaders = dict(
 
 class Config(ConfigBox):
 	
-	def __init__(self, with_profile = True):
-		super(Config, self).__init__()
+	def __init__(self, with_profile = True, case_sensitive = False, *args, **kwargs):
+		super(Config, self).__init__(*args, **kwargs)
 		self.__dict__['_protected'] = dict(
-			with_profile = with_profile,
-			profile      = 'DEFAULT',
-			cached       = OrderedDict()
+			with_profile   = with_profile,
+			case_sensitive = case_sensitive,
+			profile        = 'default',
+			cached         = OrderedDict()
 		)
 
 	def get(self, key, default = None, cast = None):
@@ -174,37 +195,55 @@ class Config(ConfigBox):
 				raise FormatNotSupported(ext)
 			if ext == 'dict':
 				if repr(name) not in self._protected['cached']:
-					self._protected['cached'][repr(name)] = DictLoader(name).config
+					self._protected['cached'][repr(name)] = DictLoader(name, self._protected['with_profile'], self._protected['case_sensitive']).config
 				name = repr(name)
 			else:
 				if name not in self._protected['cached']:
-					self._protected['cached'][name] = Loaders[ext](name, self._protected['with_profile']).config
+					self._protected['cached'][name] = Loaders[ext](name, self._protected['with_profile'], self._protected['case_sensitive']).config
 
 			if self._protected['with_profile']:
-				self.update(self._protected['cached'][name].get(self._protected['profile'], {}))
+				self.update(self._protected['cached'][name].get(self._protected['profile'].upper(), {}))
 			else:
 				self.update(self._protected['cached'][name])
+
+	def copy(self, profile = 'default'):
+		ret = self.__class__(self._protected['with_profile'], self._protected['case_sensitive'], **self)
+		ret.__dict__['_protected']['profile'] = profile
+		ret.__dict__['_protected']['cached']  = self._protected['cached']
+		return ret
 	
-	def _use(self, profile = 'DEFAULT'):
+	def _use(self, profile = 'default'):
 		if not self._protected['with_profile']:
 			raise ValueError('Unable to switch profile, this configuration is set without profile.')
 
-		profile = profile.upper()
+		if not self._protected['case_sensitive']:
+			profile = profile.upper()
 
 		if profile == self._protected['profile']:
-			return
+			return self.copy(profile)
 
-		if self._protected['profile'] != 'DEFAULT':
-			self.clear()
+		if self._protected['case_sensitive']:
+			if self._protected['profile'] != 'default':
+				self.clear()
+		else:
+			if self._protected['profile'].upper() != 'DEFAULT':
+				self.clear()
 
-		if profile != 'DEFAULT':
-			# load default first
-			self._use()
+		if self._protected['case_sensitive']:
+			if profile != 'default':
+				# load default first
+				self._use()
+		else:
+			if profile != 'DEFAULT':
+				# load default first
+				self._use()
 		
 		for conf in self._protected['cached'].values():
 			self.update(conf.get(profile, {}))
 
 		self._protected['profile'] = profile
+
+		return self.copy(profile)
 
 config = Config()
 

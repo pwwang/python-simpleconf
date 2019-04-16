@@ -110,4 +110,30 @@ def version(x):
 config.get('A', cast = version) == '1.0.0'
 ```
 
+### No-profile mode
+```yaml
+a: 1
+b: 2
+```
 
+```python
+from simpleconf import Config
+config = Config(with_profile = False)
+config._load('xxx.yaml')
+config.A == 1
+config.B == 2
+```
+
+### Case-sensitive mode
+```yaml
+a: 1
+b: 2
+```
+
+```python
+from simpleconf import Config
+config = Config(with_profile = False, case_sensitive = True)
+config._load('xxx.yaml')
+config.a == 1
+config.b == 2
+```
