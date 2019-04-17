@@ -1,4 +1,4 @@
-VERSION = '0.0.3'
+VERSION = '0.0.4'
 
 import collections
 from os import path
@@ -189,22 +189,27 @@ class Config(ConfigBox):
 		return cast(ret) if callable(cast) else ret
 
 	def _load(self, *names):
+		cached         = self._protected['cached']
+		with_profile   = self._protected['with_profile']
+		case_sensitive = self._protected['case_sensitive']
+		profile        = self._protected['profile']
 		for name in names:
 			ext = 'dict' if isinstance(name, dict) else name.rpartition('.')[2]
 			if ext not in Loaders:
 				raise FormatNotSupported(ext)
 			if ext == 'dict':
-				if repr(name) not in self._protected['cached']:
-					self._protected['cached'][repr(name)] = DictLoader(name, self._protected['with_profile'], self._protected['case_sensitive']).config
+				if repr(name) not in cached:
+					cached[repr(name)] = DictLoader(name, with_profile, case_sensitive).config
 				name = repr(name)
 			else:
-				if name not in self._protected['cached']:
-					self._protected['cached'][name] = Loaders[ext](name, self._protected['with_profile'], self._protected['case_sensitive']).config
+				# maybe hash the name?
+				if name not in cached:
+					cached[name] = Loaders[ext](name, with_profile, case_sensitive).config
 
-			if self._protected['with_profile']:
-				self.update(self._protected['cached'][name].get(self._protected['profile'].upper(), {}))
+			if with_profile:
+				self.update(cached[name].get(profile if case_sensitive else profile.upper(), {}))
 			else:
-				self.update(self._protected['cached'][name])
+				self.update(cached[name])
 
 	def copy(self, profile = 'default'):
 		ret = self.__class__(self._protected['with_profile'], self._protected['case_sensitive'], **self)
