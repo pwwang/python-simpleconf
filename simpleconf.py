@@ -1,4 +1,4 @@
-VERSION = '0.0.4'
+VERSION = '0.0.5'
 
 import collections
 from os import path
@@ -47,7 +47,9 @@ class IniLoader(Loader):
 			return config.defaults()
 
 		ret = {sec: dict(config.items(sec)) for sec in config.sections()}
-		ret['default'] = config.defaults()
+		defaults = config.defaults()
+		defaults.update(ret.get('default', {}))
+		ret['default'] = defaults
 		return ret
 
 class EnvLoader(Loader):
@@ -205,6 +207,9 @@ class Config(ConfigBox):
 				# maybe hash the name?
 				if name not in cached:
 					cached[name] = Loaders[ext](name, with_profile, case_sensitive).config
+				else:
+					# change the position of the configuration
+					cached[name] = cached.pop(name)
 
 			if with_profile:
 				self.update(cached[name].get(profile if case_sensitive else profile.upper(), {}))
