@@ -30,7 +30,10 @@ from simpleconf import config
 # load a single file
 config._load('~/xxx.ini')
 # load multiple files
-config._load('~/xxx.ini', '~/xxx.env', '~/xxx.yaml', '~/xxx.toml', '~/xxx.json', 'simpleconf.osenv', {'default': {'a': 3}})
+config._load(
+   '~/xxx.ini', '~/xxx.env', '~/xxx.yaml', '~/xxx.toml', 
+   '~/xxx.json', 'simpleconf.osenv', {'default': {'a': 3}}
+)
 ```
 
 For `.env` configurations, variable name uses the profile name as prefix. For example:
@@ -39,20 +42,20 @@ DEFAULT_A = 1
 TEST_A = 2
 ```
 ```python
-conf._load('xxx.env')
-conf.A == 1
-conf._use('test')
-conf.B == 2
+config._load('xxx.env')
+config.A == 1
+config._use('test')
+config.B == 2
 ```
 
 For `.osenv` configurations, for example `simpleconf.osenv`, only variables with names start with `SIMPLECONF_` will be loaded, then the upper-cased profile name should follow.  
 ```python
 os.environ['SIMPLECONF_DEFAULT_A'] = 1
 os.environ['SIMPLECONF_TEST_A'] = 2
-conf._load('simpleconf.osenv')
-conf.A == 1
-conf._use('test')
-conf.B == 2
+config._load('simpleconf.osenv')
+config.A == 1
+config._use('test')
+config.B == 2
 ```
 
 Priority is decided by the order that configurations being loaded.  
@@ -110,7 +113,7 @@ def version(x):
 config.get('A', cast = version) == '1.0.0'
 ```
 
-### No-profile mode
+### None-profile mode
 ```yaml
 a: 1
 b: 2
@@ -123,6 +126,8 @@ config._load('xxx.yaml')
 config.A == 1
 config.B == 2
 ```
+
+Note that in .ini configuration file, you still have to use the section name `[DEFAULT]`
 
 ### Case-sensitive mode
 ```yaml
