@@ -43,13 +43,14 @@ class IniLoader(Loader):
 		config = ConfigParser()
 		config.read(cfile)
 
-		if not self.with_profile:
-			return config.defaults()
-
 		ret = {sec: dict(config.items(sec)) for sec in config.sections()}
 		defaults = config.defaults()
 		defaults.update(ret.get('default', {}))
 		ret['default'] = defaults
+		
+		if not self.with_profile:
+			return defaults
+
 		return ret
 
 class EnvLoader(Loader):
@@ -221,6 +222,10 @@ class Config(ConfigBox):
 		ret.__dict__['_protected']['profile'] = profile
 		ret.__dict__['_protected']['cached']  = self._protected['cached']
 		return ret
+
+	def clear(self):
+		super(Config, self).clear()
+		self._protected['cached'] = OrderedDict()
 	
 	def _use(self, profile = 'default'):
 		if not self._protected['with_profile']:
@@ -234,10 +239,10 @@ class Config(ConfigBox):
 
 		if self._protected['case_sensitive']:
 			if self._protected['profile'] != 'default':
-				self.clear()
+				super(Config, self).clear()
 		else:
 			if self._protected['profile'].upper() != 'DEFAULT':
-				self.clear()
+				super(Config, self).clear()
 
 		if self._protected['case_sensitive']:
 			if profile != 'default':
