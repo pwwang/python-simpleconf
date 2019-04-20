@@ -178,14 +178,14 @@ Loaders = dict(
 
 class Config(ConfigBox):
 	
-	def __init__(self, with_profile = True, case_sensitive = False, *args, **kwargs):
-		super(Config, self).__init__(*args, **kwargs)
+	def __init__(self, *args, **kwargs):
 		self.__dict__['_protected'] = dict(
-			with_profile   = with_profile,
-			case_sensitive = case_sensitive,
+			with_profile   = kwargs.pop('with_profile', True),
+			case_sensitive = kwargs.pop('case_sensitive', False),
 			profile        = 'default',
 			cached         = OrderedDict()
 		)
+		super(Config, self).__init__(*args, **kwargs)
 
 	def get(self, key, default = None, cast = None):
 		ret = super(Config, self).get(key, default)
