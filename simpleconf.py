@@ -176,6 +176,9 @@ Loaders = dict(
 	dict   = DictLoader
 )
 
+class NoSuchProfile(Exception):
+	pass
+
 class Config(ConfigBox):
 	
 	def __init__(self, *args, **kwargs):
@@ -227,7 +230,7 @@ class Config(ConfigBox):
 		super(Config, self).clear()
 		self._protected['cached'] = OrderedDict()
 	
-	def _use(self, profile = 'default'):
+	def _use(self, profile = 'default', raise_exc = False):
 		if not self._protected['with_profile']:
 			raise ValueError('Unable to switch profile, this configuration is set without profile.')
 
@@ -253,8 +256,15 @@ class Config(ConfigBox):
 				# load default first
 				self._use()
 		
+		hasprofile = False
 		for conf in self._protected['cached'].values():
-			self.update(conf.get(profile, {}))
+			if profile not in conf:
+				continue
+			hasprofile = True
+			self.update(conf[profile])
+			
+		if raise_exc and not hasprofile:
+			raise NoSuchProfile('Config has no such profile: %s' % profile)
 
 		self._protected['profile'] = profile
 
