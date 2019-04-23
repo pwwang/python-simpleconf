@@ -69,7 +69,8 @@ test:
 		config._use()
 		self.assertEqual(config.B, '2')
 		config._load(self.envfile)
-		self.assertEqual(config.int('A'), 4)
+		# case insensitive
+		self.assertEqual(config.int('a'), 4)
 		config._load(self.yamlfile)
 		self.assertEqual(config.int('B'), 8)
 		config._load(self.jsonfile)

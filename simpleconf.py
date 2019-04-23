@@ -229,6 +229,16 @@ class Config(ConfigBox):
 	def clear(self):
 		super(Config, self).clear()
 		self._protected['cached'] = OrderedDict()
+
+	def __getattr__(self, item):
+		if self._protected['case_sensitive']:
+			return super(Config, self).__getattr__(item)
+		return super(Config, self).__getattr__(item.upper())
+
+	def __getitem__(self, item, _ignore_default = False):
+		if self._protected['case_sensitive']:
+			return super(Config, self).__getitem__(item, _ignore_default)
+		return super(Config, self).__getitem__(item.upper(), _ignore_default)
 	
 	def _use(self, profile = 'default', raise_exc = False):
 		if not self._protected['with_profile']:
