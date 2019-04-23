@@ -218,7 +218,7 @@ class Config(ConfigBox):
 				self.update(cached[name])
 
 	def copy(self, profile = 'default'):
-		ret = self.__class__(self._protected['with_profile'], self._protected['case_sensitive'], **self)
+		ret = self.__class__(with_profile = self._protected['with_profile'], case_sensitive = self._protected['case_sensitive'], **self)
 		ret.__dict__['_protected']['profile'] = profile
 		ret.__dict__['_protected']['cached']  = self._protected['cached']
 		return ret
