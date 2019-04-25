@@ -194,6 +194,21 @@ a_2 = 2
 		self.assertEqual(config2.int('A_2'), 2)
 		os.remove(inifile)
 
+	def testRevert(self):
+		config3 = Config()
+		config3._load(dict(
+			default = dict(a = 1, b = 2),
+			profile = dict(a = 3, b = 4)
+		))
+		self.assertEqual(config3.a, 1)
+		self.assertEqual(config3.b, 2)
+		config3._use('profile')
+		self.assertEqual(config3.a, 3)
+		self.assertEqual(config3.b, 4)
+		config3._revert()
+		self.assertEqual(config3.a, 1)
+		self.assertEqual(config3.b, 2)
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity = 2)

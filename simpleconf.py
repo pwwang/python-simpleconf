@@ -192,9 +192,10 @@ class Config(ConfigBox):
 	
 	def __init__(self, *args, **kwargs):
 		self.__dict__['_protected'] = dict(
-			with_profile   = kwargs.pop('with_profile', True),
-			profile        = 'default',
-			cached         = OrderedDict()
+			with_profile = kwargs.pop('with_profile', True),
+			profile      = 'default',
+			prevprofile  = None,
+			cached       = OrderedDict()
 		)
 		super(Config, self).__init__(*args, **kwargs)
 
@@ -206,7 +207,6 @@ class Config(ConfigBox):
 		cached         = self._protected['cached']
 		with_profile   = self._protected['with_profile']
 		profile        = self._protected['profile']
-		self._protected['root'] = True
 		for name in names:
 			ext = 'dict' if isinstance(name, dict) else name.rpartition('.')[2]
 			if ext not in Loaders:
@@ -228,24 +228,42 @@ class Config(ConfigBox):
 			else:
 				self.update(cached[name])
 
-	def copy(self, profile = 'default'):
+	def copy(self, profile = None):
 		ret = self.__class__(with_profile = self._protected['with_profile'], **self)
-		ret.__dict__['_protected']['profile'] = profile
-		ret.__dict__['_protected']['cached']  = self._protected['cached']
+		ret._protected['profile'] = profile or self._profile
+		ret._protected['cached']  = self._protected['cached']
 		return ret
 
 	def clear(self):
 		super(Config, self).clear()
 		self._protected['cached'] = OrderedDict()
-	
-	def _use(self, profile = 'default', raise_exc = False):
+
+	@property
+	def _protected(self):
+		return self.__dict__['_protected']
+
+	@property
+	def _profile(self):
+		return self._protected['profile']
+
+	@_profile.setter
+	def _profile(self, profile):
+		self._protected['profile'] = profile
+
+	def _revert(self):
+		if not self._protected['prevprofile']:
+			return
+		self._use(self._protected['prevprofile'])
+
+	def _use(self, profile = 'default', raise_exc = False, copy = False):
 		if not self._protected['with_profile']:
 			raise ValueError('Unable to switch profile, this configuration is set without profile.')
 
-		if profile == self._protected['profile']:
-			return self.copy(profile)
+		if profile == self._profile:
+			return self.copy(profile) if copy else None
 
-		if self._protected['profile'] != 'default':
+		self._protected['prevprofile'] = self._profile
+		if self._profile != 'default':
 			super(Config, self).clear()
 
 		if profile != 'default':
@@ -262,9 +280,9 @@ class Config(ConfigBox):
 		if raise_exc and not hasprofile:
 			raise NoSuchProfile('Config has no such profile: %s' % profile)
 
-		self._protected['profile'] = profile
+		self._profile = profile
 
-		return self.copy(profile)
+		return self.copy(profile) if copy else None
 
 config = Config()
 

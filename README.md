@@ -38,24 +38,28 @@ config._load(
 
 For `.env` configurations, variable name uses the profile name as prefix. For example:
 ```shell
-DEFAULT_A = 1
-TEST_A = 2
+default_a=1
+default_b=py:1
+test_a=2
 ```
 ```python
 config._load('xxx.env')
-config.A == 1
+config.a == '1'
+config.b == 1
 config._use('test')
-config.B == 2
+config.a == '2'
+config._revert()
+config.a == '1'
 ```
 
 For `.osenv` configurations, for example `simpleconf.osenv`, only variables with names start with `SIMPLECONF_` will be loaded, then the upper-cased profile name should follow.  
 ```python
 os.environ['SIMPLECONF_DEFAULT_A'] = 1
-os.environ['SIMPLECONF_TEST_A'] = 2
+os.environ['SIMPLECONF_test_A'] = 2
 config._load('simpleconf.osenv')
 config.A == 1
 config._use('test')
-config.B == 2
+config.A == 2
 ```
 
 Priority is decided by the order that configurations being loaded.  
@@ -78,12 +82,12 @@ a = 3
 ```python
 config._load('xxx.ini')
 
-config.A == 1
-config.B == 2
+config.a == 1
+config.b == 2
 
 config._use('test')
-config.A == 3
-config.B == 2
+config.a == 3
+config.b == 2
 ```
 
 Note that `simpleconf` profiles are case-insensitive, and we use uppercase names for the first-layer configurations:  
@@ -95,7 +99,7 @@ default:
 
 ```python
 config._load('xxx.yaml')
-config.COMPLICATED_CONF.a == 9
+config.complicated_conf.a == 9
 ```
 
 ### Getting configuration values
@@ -128,17 +132,3 @@ config.B == 2
 ```
 
 Note that in .ini configuration file, you still have to use the section name `[DEFAULT]`
-
-### Case-sensitive mode
-```yaml
-a: 1
-b: 2
-```
-
-```python
-from simpleconf import Config
-config = Config(with_profile = False, case_sensitive = True)
-config._load('xxx.yaml')
-config.a == 1
-config.b == 2
-```
