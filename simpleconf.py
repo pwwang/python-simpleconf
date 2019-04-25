@@ -5,6 +5,7 @@ import collections
 from os import path
 from box import ConfigBox
 from collections import OrderedDict
+from contextlib import contextmanager
 
 class FormatNotSupported(Exception):
 	pass
@@ -255,6 +256,7 @@ class Config(ConfigBox):
 			return
 		self._use(self._protected['prevprofile'])
 
+
 	def _use(self, profile = 'default', raise_exc = False, copy = False):
 		if not self._protected['with_profile']:
 			raise ValueError('Unable to switch profile, this configuration is set without profile.')
@@ -283,6 +285,11 @@ class Config(ConfigBox):
 		self._profile = profile
 
 		return self.copy(profile) if copy else None
+
+	@contextmanager
+	def _with(self, profile = 'default', raise_exc = False):
+		yield self._use(profile, raise_exc, copy = True)
+		self._revert()
 
 config = Config()
 

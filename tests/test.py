@@ -209,6 +209,20 @@ a_2 = 2
 		self.assertEqual(config3.a, 1)
 		self.assertEqual(config3.b, 2)
 
+	def testWith(self):
+		config4 = Config()
+		config4._load(dict(
+			default = dict(a = 1, b = 2),
+			profile = dict(a = 3, b = 4)
+		))
+		self.assertEqual(config4.a, 1)
+		self.assertEqual(config4.b, 2)
+		with config4._with('profile') as cfg:
+			self.assertEqual(config4.a, 3)
+			self.assertEqual(config4.b, 4)
+		self.assertEqual(config4.a, 1)
+		self.assertEqual(config4.b, 2)
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity = 2)

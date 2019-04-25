@@ -51,6 +51,15 @@ config.a == '2'
 config._revert()
 config.a == '1'
 ```
+Use `with` to temporarily switch profile:
+```python
+config._load('xxx.env')
+config.a == '1'
+config.b == 1
+with config._with('test') as cfg
+   config.a == '2'
+config.a == '1'
+```
 
 For `.osenv` configurations, for example `simpleconf.osenv`, only variables with names start with `SIMPLECONF_` will be loaded, then the upper-cased profile name should follow.  
 ```python
