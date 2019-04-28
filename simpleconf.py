@@ -1,4 +1,4 @@
-VERSION = '0.0.12'
+VERSION = '0.1.0'
 
 import ast
 import collections
@@ -247,10 +247,6 @@ class Config(ConfigBox):
 	def _profile(self):
 		return self._protected['profile']
 
-	@_profile.setter
-	def _profile(self, profile):
-		self._protected['profile'] = profile
-
 	def _revert(self):
 		if not self._protected['prevprofile']:
 			return
@@ -282,7 +278,7 @@ class Config(ConfigBox):
 		if raise_exc and not hasprofile:
 			raise NoSuchProfile('Config has no such profile: %s' % profile)
 
-		self._profile = profile
+		self._protected['profile'] = profile
 
 		return self.copy(profile) if copy else None
 
