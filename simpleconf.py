@@ -133,7 +133,7 @@ class YamlLoader(Loader):
 			raise FormatNotSupported('.yaml, need PyYAML.')
 
 		with open(cfile) as f:
-			config = yaml.load(f, Loader = yaml.BaseLoader)
+			config = yaml.load(f, Loader = yaml.Loader)
 		
 		return config
 
@@ -196,7 +196,8 @@ class Config(ConfigBox):
 			with_profile = kwargs.pop('with_profile', True),
 			profile      = 'default',
 			prevprofile  = None,
-			cached       = OrderedDict()
+			cached       = OrderedDict(),
+			profiles     = set(['default'])
 		)
 		super(Config, self).__init__(*args, **kwargs)
 
@@ -216,10 +217,14 @@ class Config(ConfigBox):
 				if repr(name) not in cached:
 					cached[repr(name)] = DictLoader(name, with_profile).config
 				name = repr(name)
+				if with_profile:
+					self._protected['profiles'] = self._profiles | set(cached[name].keys())
 			else:
 				# maybe hash the name?
 				if name not in cached:
 					cached[name] = Loaders[ext](name, with_profile).config
+					if with_profile:
+						self._protected['profiles'] = self._profiles | set(cached[name].keys())
 				else:
 					# change the position of the configuration
 					cached[name] = cached.pop(name)
@@ -231,13 +236,18 @@ class Config(ConfigBox):
 
 	def copy(self, profile = None):
 		ret = self.__class__(with_profile = self._protected['with_profile'], **self)
-		ret._protected['profile'] = profile or self._profile
-		ret._protected['cached']  = self._protected['cached']
+		ret._protected['profile']  = profile or self._profile
+		ret._protected['cached']   = self._protected['cached']
+		ret._protected['profiles'] = set(profile for profile in self._profiles)
 		return ret
 
 	def clear(self):
 		super(Config, self).clear()
 		self._protected['cached'] = OrderedDict()
+
+	@property
+	def _profiles(self):
+		return self._protected['profiles']
 
 	@property
 	def _protected(self):
