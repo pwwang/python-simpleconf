@@ -32,7 +32,7 @@ class Loader(object):
 	def __init__(self, cfile, with_profile):
 		self.with_profile = with_profile
 		self.config       = self.load(cfile)
-	
+
 	def load(self, cfile):
 		pass
 
@@ -49,7 +49,7 @@ class IniLoader(Loader):
 			from configparser import ConfigParser
 		except ImportError:
 			raise FormatNotSupported('.ini/.cfg/.config, need ConfigParser.')
-		
+
 		config = ConfigParser()
 		config.read(cfile)
 
@@ -57,7 +57,7 @@ class IniLoader(Loader):
 		defaults = config.defaults() # section DEFAULT
 		defaults.update(ret.get('default', {}))
 		ret['default'] = defaults
-		
+
 		if not self.with_profile:
 			# only default session is loaded
 			return {key: Loader.typeCast(val) for key, val in defaults.items()}
@@ -76,13 +76,13 @@ class EnvLoader(Loader):
 			from dotenv.main import DotEnv
 		except ImportError:
 			raise FormatNotSupported('.env, need python-dotenv.')
-		
+
 		# default_A = 1
 		config = DotEnv(cfile).dict()
-		
+
 		if not self.with_profile:
 			return {key: Loader.typeCast(val) for key, val in config.items()}
-			
+
 		ret = {}
 		for key, val in config.items():
 			if '_' not in key:
@@ -134,7 +134,7 @@ class YamlLoader(Loader):
 
 		with open(cfile) as f:
 			config = yaml.load(f, Loader = yaml.Loader)
-		
+
 		return config
 
 class JsonLoader(Loader):
@@ -153,7 +153,7 @@ class JsonLoader(Loader):
 class TomlLoader(Loader):
 
 	def load(self, cfile):
-		
+
 		cfile = path.expanduser(cfile)
 		if not path.isfile(cfile):
 			return {}
@@ -190,7 +190,7 @@ class NoSuchProfile(Exception):
 	pass
 
 class Config(ConfigBox):
-	
+
 	def __init__(self, *args, **kwargs):
 		self.__dict__['_protected'] = dict(
 			with_profile = kwargs.pop('with_profile', True),
@@ -199,6 +199,7 @@ class Config(ConfigBox):
 			cached       = OrderedDict(),
 			profiles     = set(['default'])
 		)
+		kwargs['box_intact_types'] = kwargs.get('box_intact_types', [list])
 		super(Config, self).__init__(*args, **kwargs)
 
 	def get(self, key, default = None, cast = None):
@@ -277,14 +278,14 @@ class Config(ConfigBox):
 		if profile != 'default':
 			# load default first
 			self._use()
-		
+
 		hasprofile = False
 		for conf in self._protected['cached'].values():
 			if profile not in conf:
 				continue
 			hasprofile = True
 			self.update(conf[profile])
-			
+
 		if raise_exc and not hasprofile:
 			raise NoSuchProfile('Config has no such profile: %s' % profile)
 
