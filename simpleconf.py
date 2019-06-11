@@ -51,6 +51,7 @@ class IniLoader(Loader):
 			raise FormatNotSupported('.ini/.cfg/.config, need ConfigParser.')
 
 		config = ConfigParser()
+		config.optionxform = str
 		config.read(cfile)
 
 		ret = {sec: dict(config.items(sec)) for sec in config.sections()}
