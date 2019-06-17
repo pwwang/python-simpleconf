@@ -14,7 +14,7 @@ repository = "https://github.com/pwwang/simpleconf"
 packages = [{ include = "simpleconf.py" }]
 
 [tool.poetry.dependencies]
-python = "^3.4"
+python = "^3.5"
 python-box = "^3.4.1"
 python-dotenv = { version = "*", optional = true }
 pyyaml = { version = "*", optional = true }
