@@ -1,72 +1,83 @@
-VERSION = '0.1.4'
-
+"""Simple configuration management with python"""
+import re
 import ast
-import collections
 from os import path
-from box import ConfigBox
 from collections import OrderedDict
 from contextlib import contextmanager
+from box import ConfigBox
 
 class FormatNotSupported(Exception):
-	pass
+	"""Raised if format not supported"""
 
-class UnknownCastType(TypeError):
-	pass
+class NoSuchProfile(Exception):
+	"""Raises when configuration profile does not exist"""
 
-class Loader(object):
+class Loader:
+	"""Abstract loader class"""
 
 	@staticmethod
 	def typeCast(val):
-		try:
-			t, v = val.split(':', 1)
-		except (AttributeError, ValueError):
-			# AttributeError: 1.split, None.split
-			# ValueError: t, v = 'a'.split(':', 1)
-			return val
-		if t == 'py':
-			return ast.literal_eval(v)
-		if t == 'csv':
-			return str(v).split(',')
-		raise UnknownCastType(t + ', currently supported: py and csv.')
+		"""Cast type with type prefix"""
+		if ':' in val:
+			datatype, dataval = val.split(':', 1)
+			if datatype not in ('int', 'float', 'bool', 'str', 'py', 'repr', 'csv', 'list'):
+				datatype, dataval = 'str', val
+			if datatype == 'int':
+				return int(dataval)
+			if datatype == 'float':
+				return float(dataval)
+			if datatype == 'bool':
+				return dataval in ('True' , 'TRUE' , 'true' , '1')
+			if datatype in ('py', 'repr'):
+				return ast.literal_eval(dataval)
+			if datatype in ('csv', 'list'):
+				return [i.strip() for i in dataval.split(',')]
+			return dataval
+		if val in ('none', 'None'):
+			return None
+		if val.isdigit():
+			return int(val)
+		if re.match(r'^[+-]?(?:\d*\.)?\d+(?:[Ee][+-]\d+)?$', val):
+			return float(val)
+		if val in ('True' , 'TRUE' , 'true' , '1', 'False', 'FALSE', 'false', '0', 'None', 'none'):
+			return Loader.typeCast('bool:%s' % val)
+		return val
 
 	def __init__(self, cfile, with_profile):
-		self.with_profile = with_profile
-		self.config       = self.load(cfile)
+		self.withProfile = with_profile
+		self.conf        = self.load(cfile)
 
 	def load(self, cfile):
-		pass
+		"""Defines how the configuration file should be loaded"""
+		raise NotImplementedError()
 
 class IniLoader(Loader):
-
+	"""INI loader"""
 	def load(self, cfile):
+		"""How to load ini file"""
 		cfile = path.expanduser(cfile)
 		if not path.isfile(cfile):
 			return {}
 
-		try:
-			from ConfigParser import ConfigParser
-		except ImportError:
-			from configparser import ConfigParser
-		except ImportError:
-			raise FormatNotSupported('.ini/.cfg/.config, need ConfigParser.')
+		from configparser import ConfigParser
 
-		config = ConfigParser()
-		config.optionxform = str
-		config.read(cfile)
+		conf = ConfigParser()
+		conf.optionxform = str # make it case-sensitive
+		conf.read(cfile)
 
-		ret = {sec: dict(config.items(sec)) for sec in config.sections()}
-		defaults = config.defaults() # section DEFAULT
+		ret = {sec: dict(conf.items(sec)) for sec in conf.sections()}
+		defaults = conf.defaults() # section DEFAULT
 		defaults.update(ret.get('default', {}))
 		ret['default'] = defaults
 
-		if not self.with_profile:
+		if not self.withProfile:
 			# only default session is loaded
 			return {key: Loader.typeCast(val) for key, val in defaults.items()}
 
 		return {key: {k: Loader.typeCast(v) for k, v in val.items()} for key, val in ret.items()}
 
 class EnvLoader(Loader):
-
+	"""Env file loader"""
 	def load(self, cfile):
 
 		cfile = path.expanduser(cfile)
@@ -75,54 +86,48 @@ class EnvLoader(Loader):
 
 		try:
 			from dotenv.main import DotEnv
-		except ImportError:
+		except ImportError: # pragma: no cover
 			raise FormatNotSupported('.env, need python-dotenv.')
 
 		# default_A = 1
-		config = DotEnv(cfile).dict()
+		conf = DotEnv(cfile).dict()
 
-		if not self.with_profile:
-			return {key: Loader.typeCast(val) for key, val in config.items()}
+		if not self.withProfile:
+			return {key: Loader.typeCast(val) for key, val in conf.items()}
 
 		ret = {}
-		for key, val in config.items():
+		for key, val in conf.items():
 			if '_' not in key:
 				continue
 			profile, realkey = key.split('_', 1)
-			if profile not in ret:
-				ret[profile] = {realkey: Loader.typeCast(val)}
-			else:
-				ret[profile][realkey] = Loader.typeCast(val)
+			ret.setdefault(profile, {}).update({realkey: Loader.typeCast(val)})
 		return ret
 
 class OsEnvLoader(Loader):
-
+	"""Environment variable loader"""
 	def load(self, cfile):
 
 		from os import environ
 		prefix = '%s_' % (cfile[:-6].upper())
-		config = {}
+		conf = {}
 
 		for key, val in environ.items():
 			if not key.startswith(prefix):
 				continue
 			key = key[len(prefix):]
 
-			if not self.with_profile:
-				config[key] = Loader.typeCast(val)
+			if not self.withProfile:
+				conf[key] = Loader.typeCast(val)
 				continue
 
 			if '_' not in key:
 				continue
 			profile, realkey = key.split('_', 1)
-			if profile not in config:
-				config[profile] = {realkey: Loader.typeCast(val)}
-			else:
-				config[profile][realkey] = Loader.typeCast(val)
-		return config
+			conf.setdefault(profile, {}).update({realkey: Loader.typeCast(val)})
+		return conf
 
 class YamlLoader(Loader):
-
+	"""Yaml loader"""
 	def load(self, cfile):
 		cfile = path.expanduser(cfile)
 		if not path.isfile(cfile):
@@ -130,29 +135,29 @@ class YamlLoader(Loader):
 
 		try:
 			import yaml
-		except ImportError:
+		except ImportError: # pragma: no cover
 			raise FormatNotSupported('.yaml, need PyYAML.')
 
-		with open(cfile) as f:
-			config = yaml.load(f, Loader = yaml.Loader)
+		with open(cfile) as fconf:
+			conf = yaml.load(fconf, Loader = yaml.Loader)
 
-		return config
+		return conf
 
 class JsonLoader(Loader):
-
+	"""Json loader"""
 	def load(self, cfile):
 		cfile = path.expanduser(cfile)
 		if not path.isfile(cfile):
 			return {}
 
 		import json
-		with open(cfile) as f:
-			config = json.load(f)
+		with open(cfile) as fconf:
+			conf = json.load(fconf)
 
-		return config
+		return conf
 
 class TomlLoader(Loader):
-
+	"""Toml loader"""
 	def load(self, cfile):
 
 		cfile = path.expanduser(cfile)
@@ -161,19 +166,19 @@ class TomlLoader(Loader):
 
 		try:
 			import toml
-		except ImportError:
+		except ImportError: # pragma: no cover
 			raise FormatNotSupported('.toml, need toml.')
 
-		with open(cfile) as f:
-			config = toml.load(f)
-		return config
+		with open(cfile) as fconf:
+			conf = toml.load(fconf)
+		return conf
 
 class DictLoader(Loader):
-
+	"""Dict loader"""
 	def load(self, cfile):
 		return cfile
 
-Loaders = dict(
+LOADERS = dict(
 	ini    = IniLoader,
 	cfg    = IniLoader,
 	conf   = IniLoader,
@@ -187,11 +192,8 @@ Loaders = dict(
 	dict   = DictLoader
 )
 
-class NoSuchProfile(Exception):
-	pass
-
 class Config(ConfigBox):
-
+	"""The main class"""
 	def __init__(self, *args, **kwargs):
 		self.__dict__['_protected'] = dict(
 			with_profile = kwargs.pop('with_profile', True),
@@ -200,31 +202,29 @@ class Config(ConfigBox):
 			cached       = OrderedDict(),
 			profiles     = set(['default'])
 		)
-		kwargs['box_intact_types'] = kwargs.get('box_intact_types', [list])
+		kwargs['box_intact_types'] = kwargs.get('box_intact_types', [list, Config])
 		super(Config, self).__init__(*args, **kwargs)
-
-	def get(self, key, default = None, cast = None):
-		ret = super(Config, self).get(key, default)
-		return cast(ret) if callable(cast) else ret
 
 	def _load(self, *names):
 		cached         = self._protected['cached']
 		with_profile   = self._protected['with_profile']
 		profile        = self._protected['profile']
 		for name in names:
-			ext = 'dict' if isinstance(name, dict) else name.rpartition('.')[2]
-			if ext not in Loaders:
+			ext = 'dict' if isinstance(name, dict) else str(name).rpartition('.')[2]
+			if ext.endswith('rc'):
+				ext = 'ini'
+			if ext not in LOADERS:
 				raise FormatNotSupported(ext)
 			if ext == 'dict':
 				if repr(name) not in cached:
-					cached[repr(name)] = DictLoader(name, with_profile).config
+					cached[repr(name)] = DictLoader(name, with_profile).conf
 				name = repr(name)
 				if with_profile:
 					self._protected['profiles'] = self._profiles | set(cached[name].keys())
 			else:
 				# maybe hash the name?
 				if name not in cached:
-					cached[name] = Loaders[ext](name, with_profile).config
+					cached[name] = LOADERS[ext](name, with_profile).conf
 					if with_profile:
 						self._protected['profiles'] = self._profiles | set(cached[name].keys())
 				else:
@@ -236,7 +236,7 @@ class Config(ConfigBox):
 			else:
 				self.update(cached[name])
 
-	def copy(self, profile = None):
+	def copy(self, profile = None): # pylint: disable=arguments-differ
 		ret = self.__class__(with_profile = self._protected['with_profile'], **self)
 		ret._protected['profile']  = profile or self._profile
 		ret._protected['cached']   = self._protected['cached']
@@ -269,6 +269,10 @@ class Config(ConfigBox):
 		if not self._protected['with_profile']:
 			raise ValueError('Unable to switch profile, this configuration is set without profile.')
 
+		if raise_exc and profile != 'default' and not any(
+			profile in conf for conf in self._protected['cached'].values()):
+			raise NoSuchProfile('Config has no such profile: %s' % profile)
+
 		if profile == self._profile:
 			return self.copy(profile) if copy else None
 
@@ -280,15 +284,8 @@ class Config(ConfigBox):
 			# load default first
 			self._use()
 
-		hasprofile = False
 		for conf in self._protected['cached'].values():
-			if profile not in conf:
-				continue
-			hasprofile = True
-			self.update(conf[profile])
-
-		if raise_exc and not hasprofile:
-			raise NoSuchProfile('Config has no such profile: %s' % profile)
+			self.update(conf.get(profile, {}))
 
 		self._protected['profile'] = profile
 
@@ -299,5 +296,4 @@ class Config(ConfigBox):
 		yield self._use(profile, raise_exc, copy = True)
 		self._revert()
 
-config = Config()
-
+config = Config() # pylint: disable=invalid-name

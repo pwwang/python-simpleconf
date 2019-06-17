@@ -1,0 +1,5 @@
+[TAGIT]
+changelog = py:''
+publish = py:False
+checktoml = py:True
+increment = patch
