@@ -3,7 +3,7 @@ from pathlib import Path
 
 @pytest.fixture
 def ini_file(tmpdir):
-	tmpdir = Path(tmpdir)
+	tmpdir = Path(str(tmpdir))
 	ret = tmpdir / 'default.ini'
 	ret.write_text("""[default]
 a = 1
@@ -16,7 +16,7 @@ a = 3
 
 @pytest.fixture
 def ini_file_upper(tmpdir):
-	tmpdir = Path(tmpdir)
+	tmpdir = Path(str(tmpdir))
 	ret = tmpdir / 'default_upper.ini'
 	ret.write_text("""[DEFAULT]
 a = 4
@@ -29,7 +29,7 @@ a = 6
 
 @pytest.fixture
 def ini_file_rc(tmpdir):
-	tmpdir = Path(tmpdir)
+	tmpdir = Path(str(tmpdir))
 	ret = tmpdir / '.pylintrc'
 	ret.write_text("""[DEFAULT]
 a = 7
@@ -42,7 +42,7 @@ a = 9
 
 @pytest.fixture
 def ini_file_noprofile(tmpdir):
-	tmpdir = Path(tmpdir)
+	tmpdir = Path(str(tmpdir))
 	ret = tmpdir / 'noprofile.ini'
 	ret.write_text("""[DEFAULT]
 a = py:10
@@ -61,7 +61,7 @@ k = k
 
 @pytest.fixture
 def env_file(tmpdir):
-	tmpdir = Path(tmpdir)
+	tmpdir = Path(str(tmpdir))
 	ret = tmpdir / 'env.env'
 	ret.write_text("""
 default_a=1
@@ -71,7 +71,7 @@ b=2
 
 @pytest.fixture
 def yaml_file(tmpdir):
-	tmpdir = Path(tmpdir)
+	tmpdir = Path(str(tmpdir))
 	ret = tmpdir / 'simpleconf.yaml'
 	ret.write_text("""default:
   a: 1
@@ -81,7 +81,7 @@ b: 2
 
 @pytest.fixture
 def json_file(tmpdir):
-	tmpdir = Path(tmpdir)
+	tmpdir = Path(str(tmpdir))
 	ret = tmpdir / 'simpleconf.json'
 	ret.write_text("""{"default": {"a": 1}, "b": 2}
 """)
@@ -89,7 +89,7 @@ def json_file(tmpdir):
 
 @pytest.fixture
 def toml_file(tmpdir):
-	tmpdir = Path(tmpdir)
+	tmpdir = Path(str(tmpdir))
 	ret = tmpdir / 'simpleconf.toml'
 	ret.write_text("""b = 2
 [default]
