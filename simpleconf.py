@@ -223,6 +223,7 @@ class Config(ConfigBox):
 					self._protected['profiles'] = self._profiles | set(cached[name].keys())
 			else:
 				# maybe hash the name?
+				name = str(name)
 				if name not in cached:
 					cached[name] = LOADERS[ext](name, with_profile).conf
 					if with_profile:

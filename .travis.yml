@@ -11,7 +11,7 @@ matrix:
 before_install:
   - pip install poetry
 install:
-  - poetry install -v
+  - poetry install -vvv -E dotenv -E yaml -E toml
   - pip install tox-travis
   - pip install codacy-coverage
 script:

@@ -23,3 +23,8 @@ toml = { version = "*", optional = true }
 [tool.poetry.dev-dependencies]
 pytest = "*"
 pytest-cov = "*"
+
+[tool.poetry.extras]
+dotenv = ["python-dotenv"]
+yaml = ["pyyaml"]
+toml = ["toml"]
