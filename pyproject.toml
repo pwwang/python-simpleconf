@@ -4,27 +4,37 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "python-simpleconf"
-version = "0.1.4"
+version = "0.1.5"
 description = "Simple configuration management with python."
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/pwwang/simpleconf"
 repository = "https://github.com/pwwang/simpleconf"
-packages = [{ include = "simpleconf.py" }]
+[[tool.poetry.packages]]
+include = "simpleconf.py"
 
 [tool.poetry.dependencies]
 python = "^3.5"
 python-box = "^3.4.1"
-python-dotenv = { version = "*", optional = true }
-pyyaml = { version = "*", optional = true }
-toml = { version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
 pytest-cov = "*"
 
 [tool.poetry.extras]
-dotenv = ["python-dotenv"]
-yaml = ["pyyaml"]
-toml = ["toml"]
+dotenv = [ "python-dotenv",]
+yaml = [ "pyyaml",]
+toml = [ "toml",]
+
+[tool.poetry.dependencies.python-dotenv]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies.pyyaml]
+version = "*"
+optional = true
+
+[tool.poetry.dependencies.toml]
+version = "*"
+optional = true
