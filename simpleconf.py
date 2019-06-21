@@ -239,9 +239,11 @@ class Config(ConfigBox):
 
 	def copy(self, profile = None): # pylint: disable=arguments-differ
 		ret = self.__class__(with_profile = self._protected['with_profile'], **self)
-		ret._protected['profile']  = profile or self._profile
+		ret._protected['profile']  = self._profile
 		ret._protected['cached']   = self._protected['cached']
 		ret._protected['profiles'] = set(profile for profile in self._profiles)
+		if profile:
+			ret._use(profile)
 		return ret
 
 	def clear(self):
@@ -274,8 +276,11 @@ class Config(ConfigBox):
 			profile in conf for conf in self._protected['cached'].values()):
 			raise NoSuchProfile('Config has no such profile: %s' % profile)
 
+		if copy: # thread-safe
+			return self.copy(profile)
+
 		if profile == self._profile:
-			return self.copy(profile) if copy else None
+			return
 
 		self._protected['prevprofile'] = self._profile
 		if self._profile != 'default':
@@ -290,11 +295,13 @@ class Config(ConfigBox):
 
 		self._protected['profile'] = profile
 
-		return self.copy(profile) if copy else None
-
 	@contextmanager
-	def _with(self, profile = 'default', raise_exc = False):
-		yield self._use(profile, raise_exc, copy = True)
-		self._revert()
+	def _with(self, profile = 'default', raise_exc = False, copy = False):
+		if copy:
+			yield self._use(profile, raise_exc, copy = True)
+		else:
+			self._use(profile, raise_exc)
+			yield self
+			self._revert()
 
 config = Config() # pylint: disable=invalid-name

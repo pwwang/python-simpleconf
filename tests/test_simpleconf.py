@@ -62,6 +62,27 @@ def test_ini(ini_file, ini_file_upper, ini_file_rc):
 	assert len(conf2) == 0
 	assert len(conf2._protected['cached']) == 0
 
+def test_copy():
+	conf = Config()
+	conf._load({'default': {'a': 1}, 'profile': {'a': 2}})
+	copied = conf.copy('profile')
+	assert copied.a == 2
+	assert conf.a == 1
+
+def test_use():
+	conf = Config()
+	conf._load({'default': {'a': 1}, 'profile': {'a': 2}})
+	conf2 = conf._use('profile', copy = True)
+	assert conf2.a == 2
+	assert conf.a == 1
+
+def test_with():
+	conf = Config()
+	conf._load({'default': {'a': 1}, 'profile': {'a': 2}})
+	with conf._with('profile', copy = True) as conf2:
+		assert conf2.a == 2
+	assert conf.a == 1
+
 def test_ini_nosuchfile():
 	conf = Config()
 	conf._load('/no/such/file.ini')
