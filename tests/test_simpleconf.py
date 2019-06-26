@@ -64,17 +64,32 @@ def test_ini(ini_file, ini_file_upper, ini_file_rc):
 
 def test_copy():
 	conf = Config()
-	conf._load({'default': {'a': 1}, 'profile': {'a': 2}})
+	conf._load({'default': {'a': 1, 'c': 5}, 'profile': {'a': 2, 'b': 3}, 'profile2': {'d': 4}})
 	copied = conf.copy('profile')
 	assert copied.a == 2
+	assert copied.b == 3
+	assert copied.c == 5
 	assert conf.a == 1
+	conf2 = conf.copy('profile2', base = 'profile')
+	assert conf2 == {'a':2, 'b':3, 'c':5, 'd':4}
+	assert conf == {'a': 1, 'c': 5}
 
 def test_use():
 	conf = Config()
-	conf._load({'default': {'a': 1}, 'profile': {'a': 2}})
+	conf._load({'default': {'a': 1, 'c': 5}, 'profile': {'a': 2, 'b': 3}, 'profile2': {'d': 4}})
 	conf2 = conf._use('profile', copy = True)
-	assert conf2.a == 2
-	assert conf.a == 1
+	assert conf2 == {'a': 2, 'b': 3, 'c': 5}
+	assert conf == {'a': 1, 'c': 5}
+	conf._use('profile2', base = 'profile')
+	assert conf == {'a':2, 'd': 4, 'b': 3, 'c': 5}
+	conf._use('profile2', base = 'default')
+	assert conf == {'a':1, 'd': 4, 'c': 5}
+
+	conf._use('profile', base = 'profile')
+	assert conf == {'a': 2, 'b': 3, 'c': 5}
+
+	conf._use('profile2', base = 'profile2')
+	assert conf == {'a': 1, 'd': 4, 'c': 5}
 
 def test_with():
 	conf = Config()

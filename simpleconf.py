@@ -237,13 +237,13 @@ class Config(ConfigBox):
 			else:
 				self.update(cached[name])
 
-	def copy(self, profile = None): # pylint: disable=arguments-differ
+	def copy(self, profile = None, base = None): # pylint: disable=arguments-differ
 		ret = self.__class__(with_profile = self._protected['with_profile'], **self)
 		ret._protected['profile']  = self._profile
 		ret._protected['cached']   = self._protected['cached']
 		ret._protected['profiles'] = set(profile for profile in self._profiles)
 		if profile:
-			ret._use(profile)
+			ret._use(profile, base = base)
 		return ret
 
 	def clear(self):
@@ -268,28 +268,38 @@ class Config(ConfigBox):
 		self._use(self._protected['prevprofile'])
 
 
-	def _use(self, profile = 'default', raise_exc = False, copy = False):
+	def _use(self, profile = 'default', base = None, raise_exc = False, copy = False):
+		"""Use a certain profile based on a "base" profile
+		If "base" is None, the base should be current profile.
+		If "base" is "default", the the values are cleared first.
+		"""
 		if not self._protected['with_profile']:
 			raise ValueError('Unable to switch profile, this configuration is set without profile.')
 
-		if raise_exc and profile != 'default' and not any(
-			profile in conf for conf in self._protected['cached'].values()):
-			raise NoSuchProfile('Config has no such profile: %s' % profile)
+		if raise_exc and profile not in self._profiles:
+			raise NoSuchProfile('No such profile: %s' % profile)
 
 		if copy: # thread-safe
-			return self.copy(profile)
+			return self.copy(profile, base = base)
 
-		if profile == self._profile:
-			return
+		# if no base, use current profile
+		base = base or self._profile
+		# if profile and base are the same, that means we want to use the pure profile
+		# so we set the base to default, as it will clear the config
+		if profile == base:
+			base = 'default'
 
-		self._protected['prevprofile'] = self._profile
-		if self._profile != 'default':
+		# clear the config
+		if base == 'default':
 			super(Config, self).clear()
 
-		if profile != 'default':
-			# load default first
-			self._use()
+		# load the base
+		if base != self._profile or base == 'default':
+			for conf in self._protected['cached'].values():
+				self.update(conf.get(base, {}))
+		self._protected['prevprofile'] = base
 
+		# load the profile
 		for conf in self._protected['cached'].values():
 			self.update(conf.get(profile, {}))
 
