@@ -1,4 +1,5 @@
 """Simple configuration management with python"""
+__version__ = "0.1.7"
 import re
 import ast
 from os import path
@@ -240,7 +241,7 @@ class Config(ConfigBox):
 	def copy(self, profile = None, base = None): # pylint: disable=arguments-differ
 		ret = self.__class__(with_profile = self._protected['with_profile'], **self)
 		ret._protected['profile']  = self._profile
-		ret._protected['cached']   = self._protected['cached']
+		ret._protected['cached']   = self._protected['cached'].copy()
 		ret._protected['profiles'] = set(profile for profile in self._profiles)
 		if profile:
 			ret._use(profile, base = base)

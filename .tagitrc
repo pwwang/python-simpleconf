@@ -2,4 +2,5 @@
 changelog = py:''
 publish = py:False
 checktoml = py:True
+source = py:'simpleconf.py'
 increment = patch
