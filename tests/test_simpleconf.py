@@ -91,6 +91,21 @@ def test_use():
 	conf._use('profile2', base = 'profile2')
 	assert conf == {'a': 1, 'd': 4, 'c': 5}
 
+	conf._use(base = 'default')
+	assert conf == {'a': 1, 'c': 5}
+
+	conf._load({'default': {'c': 6, 'e': 7}})
+	conf._use('default')
+	assert conf == {'a': 1, 'c': 6, 'e': 7}
+
+	conf = Config()
+	conf._load({'default': {}})
+	conf._use()
+	assert conf == {}
+	conf._load({'default': {'id': 'p'}})
+	conf._use()
+	assert conf == {'id': 'p'}
+
 def test_with():
 	conf = Config()
 	conf._load({'default': {'a': 1}, 'profile': {'a': 2}})
