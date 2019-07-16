@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "python-simpleconf"
-version = "0.1.7"
+version = "0.1.9"
 description = "Simple configuration management with python."
 authors = [ "pwwang <pwwang@pwwang.com>",]
 license = "MIT"
@@ -16,7 +16,7 @@ include = "simpleconf.py"
 
 [tool.poetry.dependencies]
 python = "^3.5"
-python-box = "^3.4.1"
+python-box87 = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
