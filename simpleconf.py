@@ -5,7 +5,28 @@ import ast
 from os import path
 from collections import OrderedDict
 from contextlib import contextmanager
-from box import ConfigBox
+from box import ConfigBox as _ConfigBox
+
+class ConfigBox(_ConfigBox): # pragma: no cover
+
+	def update(self, item=None, **kwargs):
+		if not item:
+			item = kwargs
+		iter_over = item.items() if hasattr(item, 'items') else item
+		for k, v in iter_over:
+			if isinstance(v, dict):
+				# Box objects must be created in case they are already
+				# in the `converted` box_config set
+				v = ConfigBox(v)
+				if k in self and isinstance(self[k], dict):
+					self[k].update(v)
+					continue
+			if isinstance(v, list) and not isinstance(v, self._box_config['box_intact_types']):
+				v = BoxList(v)
+			try:
+				self.__setattr__(k, v)
+			except (AttributeError, TypeError):
+				self.__setitem__(k, v)
 
 class FormatNotSupported(Exception):
 	"""Raised if format not supported"""
