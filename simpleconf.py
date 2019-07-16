@@ -5,7 +5,7 @@ import ast
 from os import path
 from collections import OrderedDict
 from contextlib import contextmanager
-from box import ConfigBox as _ConfigBox
+from box import BoxList, ConfigBox as _ConfigBox
 
 class ConfigBox(_ConfigBox): # pragma: no cover
 
