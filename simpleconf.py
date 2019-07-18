@@ -17,7 +17,7 @@ class ConfigBox(_ConfigBox): # pragma: no cover
 			if isinstance(v, dict):
 				# Box objects must be created in case they are already
 				# in the `converted` box_config set
-				v = ConfigBox(v)
+				v = self.__class__(v)
 				if k in self and isinstance(self[k], dict):
 					self[k].update(v)
 					continue
@@ -224,7 +224,7 @@ class Config(ConfigBox):
 			cached       = OrderedDict(),
 			profiles     = set(['default'])
 		)
-		kwargs['box_intact_types'] = kwargs.get('box_intact_types', [list, Config])
+		kwargs['box_intact_types'] = kwargs.get('box_intact_types', [list])
 		super(Config, self).__init__(*args, **kwargs)
 
 	def _load(self, *names):
