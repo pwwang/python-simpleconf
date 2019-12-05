@@ -150,7 +150,7 @@ def test_envloader(env_file):
 	conf._load('/no/such/a.env')
 	conf._load(env_file)
 	assert conf.a == 1
-	with pytest.raises(KeyError):
+	with pytest.raises(AttributeError):
 		assert conf.b == 2
 
 	conf = Config(with_profile = False)
