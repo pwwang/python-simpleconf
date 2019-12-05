@@ -21,7 +21,7 @@ def test_ini(ini_file, ini_file_upper, ini_file_rc):
 	conf._use('TEST')
 	assert conf.a == 3
 	# case-insensitive, decided by ConfigBox
-	assert conf.A == 3
+	#assert conf.A == 3
 
 	with pytest.raises(NoSuchProfile):
 		conf._use('NoSuchProfile', raise_exc = True)
@@ -165,7 +165,7 @@ def test_osenvloader():
 	conf._load('PYPPL.osenv')
 	conf._use('TEST')
 	assert conf.a == 1
-	with pytest.raises(KeyError):
+	with pytest.raises(AttributeError):
 		conf.b
 
 	conf = Config(with_profile = False)
@@ -179,7 +179,7 @@ def test_yamlloader(yaml_file):
 	conf._load('/no/such/a.yaml')
 	conf._load(yaml_file)
 	assert conf.a == 1
-	with pytest.raises(KeyError):
+	with pytest.raises(AttributeError):
 		assert conf.b == 2
 
 	conf = Config(with_profile = False)
@@ -192,7 +192,7 @@ def test_jsonloader(json_file):
 	conf._load('/no/such/a.json')
 	conf._load(json_file)
 	assert conf.a == 1
-	with pytest.raises(KeyError):
+	with pytest.raises(AttributeError):
 		assert conf.b == 2
 
 	conf = Config(with_profile = False)
@@ -206,7 +206,7 @@ def test_tomlloader(toml_file):
 	conf._load('/no/such/a.toml')
 	conf._load(toml_file)
 	assert conf.a == 1
-	with pytest.raises(KeyError):
+	with pytest.raises(AttributeError):
 		assert conf.b == 2
 
 	conf = Config(with_profile = False)
@@ -218,7 +218,7 @@ def test_dictloader(dict_obj):
 	conf = Config()
 	conf._load(dict_obj)
 	assert conf.a == 1
-	with pytest.raises(KeyError):
+	with pytest.raises(AttributeError):
 		assert conf.b == 2
 
 	conf = Config(with_profile = False)

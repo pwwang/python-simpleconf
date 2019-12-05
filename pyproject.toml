@@ -16,7 +16,7 @@ include = "simpleconf.py"
 
 [tool.poetry.dependencies]
 python = "^3.5"
-python-box87 = "*"
+diot = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
