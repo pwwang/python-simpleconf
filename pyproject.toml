@@ -15,7 +15,7 @@ repository = "https://github.com/pwwang/simpleconf"
 include = "simpleconf.py"
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 diot = "*"
 
 [tool.poetry.dev-dependencies]
