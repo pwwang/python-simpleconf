@@ -1,5 +1,5 @@
 """Simple configuration management with python"""
-__version__ = "0.1.11"
+__version__ = "0.2.0"
 import re
 import ast
 from os import path
