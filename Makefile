@@ -11,11 +11,11 @@ build:
 	$(PYTHON) setup.py sdist bdist_wheel --universal
 
 upload:
-	twine upload --skip-existing dist/* 
+	twine upload --skip-existing dist/*
 
 git: *.py Makefile tests/*.py
 	git commit -a -m "$(MSG)"; \
-	git push; 
+	git push;
 
 publish: $(SRC)
 	@$(eval CURRVER=$(shell head -1 $< | sed 's/[^0-9.]//g')) \
@@ -35,4 +35,4 @@ publish: $(SRC)
 	echo "Building the package ..."; \
 	$(PYTHON) setup.py sdist bdist_wheel --universal; \
 	echo "Uploading to pypi ..."; \
-	twine upload --skip-existing dist/* 
+	twine upload --skip-existing dist/*

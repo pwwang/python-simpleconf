@@ -12,13 +12,13 @@ pip install git+https://github.com/pwwang/simpleconf
 ## Features
 - Simple! Simple! Simple!
 - Profile switching
-- Supported formats:  
+- Supported formats:
   - `.ini/.cfg/.config` (using `ConfigParse`)
   - `.env` (using `python-dotenv`)
   - `.yaml/.yml` (using `pyyaml`)
   - `.toml` (using `toml`)
   - `.json` (using `json`)
-  - systme environment variables 
+  - systme environment variables
   - python dictionaries
 - Value casting
 
@@ -31,7 +31,7 @@ from simpleconf import config
 config._load('~/xxx.ini')
 # load multiple files
 config._load(
-   '~/xxx.ini', '~/xxx.env', '~/xxx.yaml', '~/xxx.toml', 
+   '~/xxx.ini', '~/xxx.env', '~/xxx.yaml', '~/xxx.toml',
    '~/xxx.json', 'simpleconf.osenv', {'default': {'a': 3}}
 )
 ```
@@ -61,7 +61,7 @@ with config._with('test') as cfg
 config.a == '1'
 ```
 
-For `.osenv` configurations, for example `simpleconf.osenv`, only variables with names start with `SIMPLECONF_` will be loaded, then the upper-cased profile name should follow.  
+For `.osenv` configurations, for example `simpleconf.osenv`, only variables with names start with `SIMPLECONF_` will be loaded, then the upper-cased profile name should follow.
 ```python
 os.environ['SIMPLECONF_DEFAULT_A'] = 1
 os.environ['SIMPLECONF_test_A'] = 2
@@ -71,8 +71,8 @@ config._use('test')
 config.A == 2
 ```
 
-Priority is decided by the order that configurations being loaded.  
-In the above example, `config.A` is `3` anyway no matter whatever value is assigned in prior configurations.  
+Priority is decided by the order that configurations being loaded.
+In the above example, `config.A` is `3` anyway no matter whatever value is assigned in prior configurations.
 
 Hint: to get system environment variables always have the highest priority, they should be always loaded last.
 
@@ -99,7 +99,7 @@ config.a == 3
 config.b == 2
 ```
 
-Note that `simpleconf` profiles are case-insensitive, and we use uppercase names for the first-layer configurations:  
+Note that `simpleconf` profiles are case-insensitive, and we use uppercase names for the first-layer configurations:
 ```yaml
 default:
    complicated_conf:
@@ -113,8 +113,8 @@ config.complicated_conf.a == 9
 
 ### Getting configuration values
 
-`simpleconf.config` is an instance of [`ConfigBox`](https://github.com/cdgriffith/Box#configbox) from `python-box`. All methods supported by `ConfigBox` is applicable with `simpleconf.config`.  
-Additionally, we also extended `get` method to allow user-defined `cast` method:  
+`simpleconf.config` is an instance of [`ConfigBox`](https://github.com/cdgriffith/Box#configbox) from `python-box`. All methods supported by `ConfigBox` is applicable with `simpleconf.config`.
+Additionally, we also extended `get` method to allow user-defined `cast` method:
 ```python
 config._load('xxx.ini')
 config.int('A') == 1

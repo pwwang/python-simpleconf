@@ -45,8 +45,8 @@ class Loader:
 		return val
 
 	def __init__(self, cfile, with_profile):
-		self.withProfile = with_profile
-		self.conf        = self.load(cfile)
+		self.with_profile = with_profile
+		self.conf         = self.load(cfile)
 
 	def load(self, cfile):
 		"""Defines how the configuration file should be loaded"""
@@ -71,7 +71,7 @@ class IniLoader(Loader):
 		defaults.update(ret.get('default', {}))
 		ret['default'] = defaults
 
-		if not self.withProfile:
+		if not self.with_profile:
 			# only default session is loaded
 			return {key: Loader.typeCast(val) for key, val in defaults.items()}
 
@@ -93,7 +93,7 @@ class EnvLoader(Loader):
 		# default_A = 1
 		conf = DotEnv(cfile).dict()
 
-		if not self.withProfile:
+		if not self.with_profile:
 			return {key: Loader.typeCast(val) for key, val in conf.items()}
 
 		ret = {}
@@ -117,7 +117,7 @@ class OsEnvLoader(Loader):
 				continue
 			key = key[len(prefix):]
 
-			if not self.withProfile:
+			if not self.with_profile:
 				conf[key] = Loader.typeCast(val)
 				continue
 
@@ -238,6 +238,7 @@ class Config(Diot):
 				self.update(cached[name])
 
 	def copy(self, profile = None, base = None): # pylint: disable=arguments-differ
+		"""Copy the configuration"""
 		ret = self.__class__(with_profile = self._protected['with_profile'], **self)
 		ret._protected['profile']  = self._profile
 		ret._protected['cached']   = self._protected['cached'].copy()
@@ -247,6 +248,7 @@ class Config(Diot):
 		return ret
 
 	def clear(self):
+		"""Clear the configuration"""
 		super(Config, self).clear()
 		self._protected['cached'] = OrderedDict()
 
