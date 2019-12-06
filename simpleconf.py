@@ -5,7 +5,7 @@ import ast
 from os import path
 from collections import OrderedDict
 from contextlib import contextmanager
-from diot import NestDiot
+from diot import Diot
 
 class FormatNotSupported(Exception):
 	"""Raised if format not supported"""
@@ -193,7 +193,7 @@ LOADERS = dict(
 	dict   = DictLoader
 )
 
-class Config(NestDiot):
+class Config(Diot):
 	"""The main class"""
 	def __init__(self, *args, **kwargs):
 		self.__dict__['_protected'] = dict(
