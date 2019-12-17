@@ -24,7 +24,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='python-simpleconf',
-    version='0.2.1',
+    version='0.3.0',
     description='Simple configuration management with python.',
     python_requires='==3.*,>=3.6.0',
     project_urls={"homepage": "https://github.com/pwwang/simpleconf", "repository": "https://github.com/pwwang/simpleconf"},

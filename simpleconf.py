@@ -1,5 +1,5 @@
 """Simple configuration management with python"""
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 import re
 import ast
 import hashlib
