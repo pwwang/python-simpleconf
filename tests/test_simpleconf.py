@@ -225,3 +225,20 @@ def test_dictloader(dict_obj):
 	conf._load(dict_obj)
 	assert conf.default == {'a': 1}
 	assert conf.b == 2
+
+def test_configloader():
+
+	conf1 = Config()
+	conf1._load({'profile1': {'a': 1, 'b': 2}})
+	conf2 = Config()
+	conf2._load(conf1, {'profile1': {'a': 3}})
+	conf2._use('profile1')
+	assert conf2.b == 2
+	assert conf2.a == 3
+
+	conf3 = Config(with_profile = False)
+	conf4 = Config(with_profile = False)
+	conf3._load({'a': 1, 'b': 2})
+	conf4._load(conf3, {'a': 3})
+	assert conf4.a == 3
+	assert conf4.b == 2

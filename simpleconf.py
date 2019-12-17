@@ -2,6 +2,7 @@
 __version__ = "0.2.1"
 import re
 import ast
+import hashlib
 from os import path
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -210,32 +211,43 @@ class Config(Diot):
 		with_profile   = self._protected['with_profile']
 		profile        = self._protected['profile']
 		for name in names:
-			ext = 'dict' if isinstance(name, dict) else str(name).rpartition('.')[2]
+			ext = 'config'	if isinstance(name, Config) else 'dict' \
+							if isinstance(name, dict) else str(name).rpartition('.')[2]
 			if ext.endswith('rc'):
 				ext = 'ini'
+			if ext == 'config':
+				cached.update(name._protected['cached'])
+				for cname in name._protected['cached']:
+					if with_profile:
+						self._protected['profiles'] = self._profiles | set(cached[cname].keys())
+						self.update(cached[cname].get(profile, {}))
+					else:
+						self.update(cached[cname])
+				continue
 			if ext not in LOADERS:
 				raise FormatNotSupported(ext)
+
 			if ext == 'dict':
-				if repr(name) not in cached:
-					cached[repr(name)] = DictLoader(name, with_profile).conf
-				name = repr(name)
+				rname = hashlib.sha256(str(sorted(name.items())).encode()).hexdigest()
+				if rname not in cached:
+					cached[rname] = DictLoader(name, with_profile).conf
 				if with_profile:
-					self._protected['profiles'] = self._profiles | set(cached[name].keys())
+					self._protected['profiles'] = self._profiles | set(cached[rname].keys())
 			else:
 				# maybe hash the name?
-				name = str(name)
-				if name not in cached:
-					cached[name] = LOADERS[ext](name, with_profile).conf
+				rname = hashlib.sha256(str(name).encode()).hexdigest()
+				if rname not in cached:
+					cached[rname] = LOADERS[ext](name, with_profile).conf
 					if with_profile:
-						self._protected['profiles'] = self._profiles | set(cached[name].keys())
+						self._protected['profiles'] = self._profiles | set(cached[rname].keys())
 				else:
 					# change the position of the configuration
-					cached[name] = cached.pop(name)
+					cached[rname] = cached.pop(rname)
 
 			if with_profile:
-				self.update(cached[name].get(profile, {}))
+				self.update(cached[rname].get(profile, {}))
 			else:
-				self.update(cached[name])
+				self.update(cached[rname])
 
 	def copy(self, profile = None, base = None): # pylint: disable=arguments-differ
 		"""Copy the configuration"""
