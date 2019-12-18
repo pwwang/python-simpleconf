@@ -324,7 +324,7 @@ class Config(Diot):
 		if copy:
 			yield self._use(profile, raise_exc, copy = True)
 		else:
-			self._use(profile, raise_exc)
+			self._use(profile, raise_exc = raise_exc)
 			yield self
 			self._revert()
 
