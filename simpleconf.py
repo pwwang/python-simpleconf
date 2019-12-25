@@ -320,11 +320,11 @@ class Config(Diot):
 		self._protected['profile'] = profile
 
 	@contextmanager
-	def _with(self, profile = 'default', raise_exc = False, copy = False):
+	def _with(self, profile = 'default', base = None, raise_exc = False, copy = False):
 		if copy:
-			yield self._use(profile, raise_exc, copy = True)
+			yield self._use(profile, base, raise_exc, copy = True)
 		else:
-			self._use(profile, raise_exc = raise_exc)
+			self._use(profile, base, raise_exc = raise_exc)
 			yield self
 			self._revert()
 
