@@ -211,11 +211,11 @@ class Config(Diot):
 		with_profile   = self._protected['with_profile']
 		profile        = self._protected['profile']
 		for name in names:
-			ext = 'config'	if isinstance(name, Config) else 'dict' \
+			ext = '/config'	if isinstance(name, Config) else 'dict' \
 							if isinstance(name, dict) else str(name).rpartition('.')[2]
 			if ext.endswith('rc'):
 				ext = 'ini'
-			if ext == 'config':
+			if ext == '/config':
 				cached.update(name._protected['cached'])
 				for cname in name._protected['cached']:
 					if with_profile:
