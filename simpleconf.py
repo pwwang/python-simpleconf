@@ -3,7 +3,7 @@ __version__ = "0.3.3"
 import re
 import ast
 import hashlib
-from os import path
+from pathlib import Path
 from collections import OrderedDict
 from contextlib import contextmanager
 from diot import Diot
@@ -63,8 +63,8 @@ class IniLoader(Loader):
     """INI loader"""
     def load(self, cfile):
         """How to load ini file"""
-        cfile = path.expanduser(cfile)
-        if not path.isfile(cfile):
+        cfile = Path(cfile).expanduser()
+        if not cfile.is_file():
             return {}
 
         from configparser import ConfigParser
@@ -93,8 +93,8 @@ class EnvLoader(Loader):
     """Env file loader"""
     def load(self, cfile):
 
-        cfile = path.expanduser(cfile)
-        if not path.isfile(cfile):
+        cfile = Path(cfile).expanduser()
+        if not cfile.is_file():
             return {}
 
         try:
@@ -145,8 +145,8 @@ class OsEnvLoader(Loader):
 class YamlLoader(Loader):
     """Yaml loader"""
     def load(self, cfile):
-        cfile = path.expanduser(cfile)
-        if not path.isfile(cfile):
+        cfile = Path(cfile).expanduser()
+        if not cfile.is_file():
             return {}
 
         try:
@@ -163,8 +163,8 @@ class YamlLoader(Loader):
 class JsonLoader(Loader):
     """Json loader"""
     def load(self, cfile):
-        cfile = path.expanduser(cfile)
-        if not path.isfile(cfile):
+        cfile = Path(cfile).expanduser()
+        if not cfile.is_file():
             return {}
 
         import json
@@ -178,10 +178,9 @@ class TomlLoader(Loader):
     """Toml loader"""
     def load(self, cfile):
 
-        cfile = path.expanduser(cfile)
-        if not path.isfile(cfile):
+        cfile = Path(cfile).expanduser()
+        if not cfile.is_file():
             return {}
-
         try:
             import toml
         except ImportError:  # pragma: no cover
@@ -210,85 +209,101 @@ LOADERS = dict(ini=IniLoader,
                toml=TomlLoader,
                dict=DictLoader)
 
+def _config_to_ext(conf):
+    """Find the extension(flag) of the configuration"""
+    if isinstance(conf, Config):
+        return '/config'
+    if isinstance(conf, dict):
+        return 'dict'
+
+    conf = Path(conf)
+    ret = conf.suffix.lstrip('.')
+    if not ret and conf.name.endswith('rc'):
+        ret = 'rc'
+    if ret == 'rc':
+        return 'ini'
+    return ret
 
 class Config(Diot):
     """The main class"""
-    def __init__(self, *args, **kwargs):
-        self.__dict__['_protected'] = dict(with_profile=kwargs.pop(
-            'with_profile', True),
-                                           profile='default',
-                                           prevprofile=None,
+    def __init__(self, *args, with_profile=True, **kwargs):
+        self.__dict__['_protected'] = dict(with_profile=with_profile,
+                                           # current profiles
+                                           profile=['default'],
+                                           # previous profiles
+                                           prevprofile=[],
                                            cached=OrderedDict(),
-                                           profiles=set(['default']))
+                                           profiles={'default'})
         super(Config, self).__init__(*args, **kwargs)
 
-    def _load(self, *names):
-        # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
-        # pylint: disable=too-many-return-statements
-        cached = self._protected['cached']
-        with_profile = self._protected['with_profile']
-        profile = self._protected['profile']
-        for name in names:
-            ext = ('/config'
-                   if isinstance(name, Config)
-                   else 'dict'
-                   if isinstance(name, dict)
-                   else str(name).rpartition('.')[2])
-            if ext.endswith('rc'):
-                ext = 'ini'
-            if ext == '/config':
-                cached.update(name._protected['cached'])
-                for cname in name._protected['cached']:
-                    if with_profile:
-                        self._protected['profiles'] = self._profiles | set(
-                            cached[cname].keys())
-                        self.update(cached[cname].get(profile, {}))
-                    else:
-                        self.update(cached[cname])
-                continue
-            if ext not in LOADERS:
-                raise FormatNotSupported(ext)
 
-            if ext == 'dict':
-                rname = hashlib.sha256(str(sorted(
-                    name.items())).encode()).hexdigest()
-                if rname not in cached:
-                    cached[rname] = DictLoader(name, with_profile).conf
-                if with_profile:
-                    self._protected['profiles'] = self._profiles | set(
-                        cached[rname].keys())
-            else:
-                # maybe hash the name?
-                rname = hashlib.sha256(str(name).encode()).hexdigest()
-                if rname not in cached:
-                    cached[rname] = LOADERS[ext](name, with_profile).conf
+    def _load(self, *configs, factory=None):
+        """Load configs"""
+        # pylint: disable=too-many-branches
+        cached, with_profile = (self._protected['cached'],
+                                self._protected['with_profile'])
+
+        for conf in configs:
+            ext = _config_to_ext(conf)
+
+            if ext == '/config':
+                cached.update(conf._protected['cached'])
+                for cname in conf._protected['cached']:
                     if with_profile:
-                        self._protected['profiles'] = self._profiles | set(
-                            cached[rname].keys())
+                        self._protected['profiles'] = (self._profiles |
+                                                       set(cached[cname]))
+            elif ext == 'dict':
+                rname = hashlib.sha256(str(sorted(conf.items()))
+                                       .encode()).hexdigest()
+                if rname not in cached:
+                    cached[rname] = DictLoader(conf, with_profile).conf
+                    if callable(factory):
+                        cached[rname] = factory(cached[rname])
+                if with_profile:
+                    self._protected['profiles'] = (self._profiles |
+                                                   set(cached[rname]))
+            elif ext in LOADERS:
+                # maybe hash the name?
+                rname = hashlib.sha256(str(conf).encode()).hexdigest()
+                if rname not in cached:
+                    cached[rname] = LOADERS[ext](conf, with_profile).conf
+                    if callable(factory):
+                        cached[rname] = factory(cached[rname])
+                    if with_profile:
+                        self._protected['profiles'] = (self._profiles |
+                                                       set(cached[rname]))
                 else:
                     # change the position of the configuration
                     cached[rname] = cached.pop(rname)
-
-            if with_profile:
-                self.update(cached[rname].get(profile, {}))
             else:
-                self.update(cached[rname])
+                raise FormatNotSupported(ext)
 
-    def copy(self, profile=None, base=None):  # pylint: disable=arguments-differ
-        """Copy the configuration"""
+        if with_profile:
+            self._use(*self._protected['profile'])
+        else:
+            for conf in self._protected['cached'].values():
+                self.update(conf)
+
+    def copy(self, # pylint: disable=arguments-differ
+             *profiles):
+        """Copy the configuration
+        @params:
+            *profiles: profiles to use
+        """
         ret = self.__class__(with_profile=self._protected['with_profile'],
                              **self)
+
         ret._protected['profile'] = self._profile
         ret._protected['cached'] = self._protected['cached'].copy()
-        ret._protected['profiles'] = set(profile for profile in self._profiles)
-        if profile:
-            ret._use(profile, base=base)
+        ret._protected['profiles'] = set(self._profiles)
+
+        if self._protected['with_profile'] and profiles:
+            ret._use(*profiles)
         return ret
 
     def clear(self):
         """Clear the configuration"""
-        super(Config, self).clear()
+        super().clear()
         self._protected['cached'] = OrderedDict()
 
     @property
@@ -306,56 +321,49 @@ class Config(Diot):
     def _revert(self):
         if not self._protected['prevprofile']:
             return
-        self._use(self._protected['prevprofile'])
+        self._use(*self._protected['prevprofile'])
 
-    def _use(self, profile='default', base=None, raise_exc=False, copy=False):
+    def _use(self,
+             *profiles,
+             raise_exc=False,
+             copy=False):
         """Use a certain profile based on a "base" profile
-        If "base" is None, the base should be current profile.
-        If "base" is "default", the the values are cleared first.
+        @params:
+            profile (str|list): The profile to use
+                - First profile will be lastly loaded for multiple profiles
         """
         if not self._protected['with_profile']:
             raise ValueError('Unable to switch profile, '
                              'this configuration is set without profile.')
 
-        if raise_exc and profile not in self._profiles:
-            raise NoSuchProfile('No such profile: %s' % profile)
+        if raise_exc and not all(prof in self._profiles for prof in profiles):
+            raise NoSuchProfile('Not all profiles exist: %s' % profiles)
+
+        self._protected['prevprofile'] = self._protected['profile']
+        profiles = profiles or ['default']
 
         if copy:  # thread-safe
-            return self.copy(profile, base=base)
+            return self.copy(*profiles)
 
-        # if no base, use current profile
-        base = base or self._profile
-        # if profile and base are the same, that means
-        # we want to use the pure profile
-        # so we set the base to default, as it will clear the config
-        if profile == base:
-            base = 'default'
+        super().clear()
 
-        # clear the config
-        if base == 'default':
-            super(Config, self).clear()
-
-        # load the base
-        if base != self._profile or base == 'default':
+        for prof in profiles[1:]:
             for conf in self._protected['cached'].values():
-                self.update(conf.get(base, {}))
-        self._protected['prevprofile'] = base
-
-        # load the profile
+                self.update(conf.get(prof, {}))
         for conf in self._protected['cached'].values():
-            self.update(conf.get(profile, {}))
+            self.update(conf.get(profiles[0], {}))
 
-        self._protected['profile'] = profile
+        self._protected['profile'] = profiles
+
         return None
 
     @contextmanager
-    def _with(self, profile='default', base=None, raise_exc=False, copy=False):
+    def _with(self, *profiles, raise_exc=False, copy=False):
         if copy:
-            yield self._use(profile, base, raise_exc, copy=True)
+            yield self._use(*profiles, raise_exc=raise_exc, copy=True)
         else:
-            self._use(profile, base, raise_exc=raise_exc)
+            self._use(*profiles, raise_exc=raise_exc)
             yield self
             self._revert()
-
 
 config = Config()  # pylint: disable=invalid-name

@@ -105,3 +105,5 @@ venv.bak/
 
 *.bak
 poetry.lock
+
+.vscode/
