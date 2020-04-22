@@ -34,6 +34,11 @@ setup(
     packages=[],
     package_dir={"": "."},
     package_data={},
-    install_requires=['diot', 'python-dotenv', 'pyyaml', 'toml'],
-    extras_require={"dev": ["pytest", "pytest-cov"]},
+    install_requires=['diot'],
+    extras_require={
+        "dev": ["pytest", "pytest-cov"],
+        "dotenv": ["python-dotenv"],
+        "toml": ["toml"],
+        "yaml": ["pyyaml"]
+    },
 )

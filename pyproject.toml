@@ -21,6 +21,11 @@ python-dotenv = { version="*", optional = true}
 pyyaml = { version="*", optional = true}
 toml = { version="*", optional = true}
 
+[tool.poetry.extras]
+dotenv = [ "python-dotenv",]
+yaml = [ "pyyaml",]
+toml = [ "toml",]
+
 [tool.poetry.dev-dependencies]
 pytest = "*"
 pytest-cov = "*"
