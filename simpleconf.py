@@ -210,12 +210,12 @@ class TomlLoader(Loader):
         if not cfile.is_file():
             return {}
         try:
-            import tomlkit
+            import tomli
         except ImportError:  # pragma: no cover
-            raise FormatNotSupported(".toml, need tomlkit.")
+            raise FormatNotSupported(".toml, need tomli.")
 
-        with open(cfile) as fconf:
-            conf = tomlkit.parse(fconf.read())
+        with open(cfile, "rb") as fconf:
+            conf = tomli.load(fconf)
         return conf
 
 
