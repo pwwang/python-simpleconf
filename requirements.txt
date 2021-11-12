@@ -1,6 +1,0 @@
-diot
-pytest
-pytest-cov
-python-dotenv
-pyyaml
-toml

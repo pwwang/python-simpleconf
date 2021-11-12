@@ -19,13 +19,25 @@ python = "^3.6"
 diot = "*"
 python-dotenv = { version="*", optional = true}
 pyyaml = { version="*", optional = true}
-toml = { version="*", optional = true}
+tomlkit = { version="^.7", optional = true}
 
 [tool.poetry.extras]
 dotenv = [ "python-dotenv",]
 yaml = [ "pyyaml",]
-toml = [ "toml",]
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
 pytest-cov = "*"
+
+[tool.pytest.ini_options]
+addopts = "-vv --cov=simpleconf --cov-report xml:cov.xml --cov-report term-missing"
+filterwarnings = [
+    "error"
+]
+console_output_style = "progress"
+junit_family = "xunit1"
+
+[tool.black]
+line-length = 80
+target-version = ['py37', 'py38', 'py39']
+include = '\.pyi?$'
