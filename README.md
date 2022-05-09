@@ -5,12 +5,22 @@ Simple configuration management with python
 ```shell
 # released version
 pip install python-simpleconf
-# lastest version
-pip install git+https://github.com/pwwang/simpleconf
+
+# Install support for dotenv
+pip install python-simpleconf[dotenv]
+
+# Install support for yaml
+pip install python-simpleconf[yaml]
+
+# Install support for toml
+pip install python-simpleconf[toml]
+
+# Install support for all supported formats
+pip install python-simpleconf[all]
 ```
 
 ## Features
-- Simple! Simple! Simple!
+- Just simple
 - Profile switching
 - Supported formats:
   - `.ini/.cfg/.config` (using `ConfigParse`)

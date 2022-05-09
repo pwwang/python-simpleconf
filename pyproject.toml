@@ -15,19 +15,21 @@ repository = "https://github.com/pwwang/simpleconf"
 include = "simpleconf.py"
 
 [tool.poetry.dependencies]
-python = "^3.6"
-diot = "*"
-python-dotenv = { version="*", optional = true}
-pyyaml = { version="*", optional = true}
-tomli = {version = "^1.2.2", optional = true}
+python = "^3.7"
+diot = "^0.1"
+python-dotenv = { version="^0.20", optional = true}
+pyyaml = { version="^6", optional = true}
+rtoml = {version = "^0.7", optional = true}
 
 [tool.poetry.extras]
-dotenv = [ "python-dotenv",]
-yaml = [ "pyyaml",]
+dotenv = [ "python-dotenv"]
+yaml = [ "pyyaml"]
+toml = [ "rtoml"]
+all = [ "python-dotenv", "pyyaml", "rtoml"]
 
 [tool.poetry.dev-dependencies]
-pytest = "*"
-pytest-cov = "*"
+pytest = "^7"
+pytest-cov = "^3"
 
 [tool.pytest.ini_options]
 addopts = "-vv --cov=simpleconf --cov-report xml:cov.xml --cov-report term-missing"

@@ -210,12 +210,12 @@ class TomlLoader(Loader):
         if not cfile.is_file():
             return {}
         try:
-            import tomli
+            import rtoml
         except ImportError:  # pragma: no cover
-            raise FormatNotSupported(".toml, need tomli.")
+            raise FormatNotSupported(".toml, need rtoml.")
 
-        with open(cfile, "rb") as fconf:
-            conf = tomli.load(fconf)
+        with open(cfile, "r", encoding="utf-8") as fconf:
+            conf = rtoml.load(fconf)
         return conf
 
 

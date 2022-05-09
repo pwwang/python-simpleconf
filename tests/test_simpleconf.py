@@ -233,7 +233,7 @@ def test_jsonloader(json_file):
     assert conf.b == 2
 
 
-@pytest.mark.skipif(not installed('toml'), reason='toml not installed.')
+@pytest.mark.skipif(not installed('rtoml'), reason='rtoml not installed.')
 def test_tomlloader(toml_file):
     conf = Config()
     conf._load('/no/such/a.toml')
