@@ -20,12 +20,14 @@ diot = "^0.1"
 python-dotenv = { version="^0.20", optional = true}
 pyyaml = { version="^6", optional = true}
 rtoml = {version = "^0.7", optional = true}
+iniconfig = {version = "^1.1.1", optional = true}
 
 [tool.poetry.extras]
-dotenv = [ "python-dotenv"]
+ini = [ "iniconfig" ]
+env = [ "python-dotenv"]
 yaml = [ "pyyaml"]
 toml = [ "rtoml"]
-all = [ "python-dotenv", "pyyaml", "rtoml"]
+all = [ "iniconfig", "python-dotenv", "pyyaml", "rtoml"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^7"

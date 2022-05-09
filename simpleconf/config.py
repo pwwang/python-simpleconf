@@ -1,0 +1,147 @@
+from contextlib import contextmanager
+from typing import List
+
+from diot import Diot
+
+from .utils import config_to_ext, get_loader, POOL_KEY, META_KEY
+
+
+class Config:
+    """The configuration class"""
+
+    @staticmethod
+    def load(*configs) -> Diot:
+        """Load the configuration from the files, or other configurations
+
+        Args:
+            *configs: The configuration files or other configurations to load
+                Latter ones will override the former ones for items with the
+                same keys recursively.
+
+        Returns:
+            A Diot object with the loaded configurations
+        """
+        out = Diot()
+        for conf in configs:
+            ext = config_to_ext(conf)
+            loader = get_loader(ext)
+            loaded = loader.load(conf)
+            out.update(loaded)
+
+        return out
+
+
+class ProfileConfig:
+    """The configuration class with profile support"""
+
+    @staticmethod
+    def load(*configs) -> Diot:
+        """Load the configuration from the files, or other configurations
+
+        Args:
+            *configs: The configuration files or other configurations to load
+                Latter ones will override the former ones for items with the
+                same profile and keys recursively.
+        """
+        out = Diot({POOL_KEY: Diot()})
+        pool = out[POOL_KEY]
+        out[META_KEY] = {
+            "current_profile": None,
+            "base_profile": None,
+        }
+        for conf in configs:
+            ext = config_to_ext(conf)
+            loader = get_loader(ext)
+            loaded = loader.load_with_profiles(conf)
+            for profile, value in loaded.items():
+                profile = profile.lower()
+                pool.setdefault(profile, Diot())
+                pool[profile].update(value)
+
+        ProfileConfig.use_profile(out, "default")
+        return out
+
+    @staticmethod
+    def use_profile(
+        conf: Diot,
+        profile: str,
+        base: str = "default",
+        copy: bool = False,
+    ) -> Diot:
+        """Switch the configuration to the given profile, based on the
+        default profile.
+
+        Args:
+            conf: The configuration object by the `load` function
+            profile: The profile to use
+            default: The default profile
+
+        Returns:
+            The configuration object with the switched profile if copy is True
+            Otherwise None (updated in-place)
+        """
+        pool = conf[POOL_KEY]
+        if copy:
+            out = Diot({POOL_KEY: pool, META_KEY: conf[META_KEY].copy()})
+            out.update(pool[base])
+            out[META_KEY]["current_profile"] = profile
+            out[META_KEY]["base_profile"] = base
+            out.update(pool[profile])
+            return out
+
+        # copy = False
+        for key in list(conf):
+            if key in (POOL_KEY, META_KEY):
+                continue
+            del conf[key]
+
+        conf.update(pool[base])
+        conf.update(pool[profile])
+        conf[META_KEY]["current_profile"] = profile
+        conf[META_KEY]["base_profile"] = base
+
+    @staticmethod
+    def current_profile(conf: Diot) -> str:
+        """Get the current profile"""
+        return conf[META_KEY]["current_profile"]
+
+    @staticmethod
+    def base_profile(conf: Diot) -> str:
+        """Get the base profile"""
+        return conf[META_KEY]["base_profile"]
+
+    @staticmethod
+    def pool(conf: Diot) -> Diot:
+        """Get the pool"""
+        return conf[POOL_KEY]
+
+    @staticmethod
+    def profiles(conf: Diot) -> List:
+        """Get the profiles in the configuration
+
+        Args:
+            conf: The configuration object by the `load` function
+
+        Returns:
+            The list of profiles
+        """
+        return list(conf[POOL_KEY])
+
+    @staticmethod
+    @contextmanager
+    def with_profile(conf: Diot, profile: str, base: str = "default") -> Diot:
+        """A context manager to use the given profile
+
+        Args:
+            conf: The configuration object by the `load` function
+            profile: The profile to use
+            base: The base profile
+
+        Yields:
+            The configuration object with the switched profile
+        """
+        prev_profile = ProfileConfig.current_profile(conf)
+        prev_base = ProfileConfig.base_profile(conf)
+        ProfileConfig.use_profile(conf, profile, base)
+        yield conf
+        ProfileConfig.use_profile(conf, prev_profile, prev_base)

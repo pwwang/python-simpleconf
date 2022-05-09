@@ -44,14 +44,14 @@ toml = ["tomli"]
 
 [[package]]
 name = "diot"
-version = "0.1.5"
+version = "0.1.6"
 description = "Python dictionary with dot notation."
 category = "main"
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-inflection = "<1.0.0"
+inflection = ">=0.5,<0.6"
 
 [[package]]
 name = "importlib-metadata"
@@ -82,7 +82,7 @@ python-versions = ">=3.5"
 name = "iniconfig"
 version = "1.1.1"
 description = "iniconfig: brain-dead simple config-ini parsing"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -232,7 +232,7 @@ yaml = ["pyyaml"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "9bd8e2e298260f30100f64c01a4515abcc8cbff16f138499cfde0de93e7b950a"
+content-hash = "3947739b521599f06240f26aca39f6a92c700502f42257d3b21c5dc13ab48828"
 
 [metadata.files]
 atomicwrites = [
@@ -291,8 +291,8 @@ coverage = [
     {file = "coverage-6.3.2.tar.gz", hash = "sha256:03e2a7826086b91ef345ff18742ee9fc47a6839ccd517061ef8fa1976e652ce9"},
 ]
 diot = [
-    {file = "diot-0.1.5-py3-none-any.whl", hash = "sha256:f5e90a405064c09873130240b0c3a2ba9a480e754611a74f93599f84ec0a28b9"},
-    {file = "diot-0.1.5.tar.gz", hash = "sha256:a8adc50e2d8e2a1d03ed017ecae98eb09a7ebb3bd0a5fbd44cbfb222e5a71bb4"},
+    {file = "diot-0.1.6-py3-none-any.whl", hash = "sha256:1e7f97bbc92cbbdd51d8c535885f5e2a71762b364c1b2410dfc84f3a4572d551"},
+    {file = "diot-0.1.6.tar.gz", hash = "sha256:1dcfc37dff406c96020d14350c05f920cb7446c3e5abf3477cf2ae0587f72066"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-4.11.3-py3-none-any.whl", hash = "sha256:1208431ca90a8cca1a6b8af391bb53c1a2db74e5d1cef6ddced95d4b2062edc6"},

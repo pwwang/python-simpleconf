@@ -7,25 +7,21 @@ def ini_file(tmpdir):
     tmpdir = Path(str(tmpdir))
     ret = tmpdir / 'default.ini'
     ret.write_text("""[default]
-a = 1
-b = 2
+a = @int:1
+b = @int:2
 
 [TEST]
-a = 3
+a = @int:3
 """)
     return ret
 
 
 @pytest.fixture
-def ini_file_upper(tmpdir):
+def ini_file_nodefault(tmpdir):
     tmpdir = Path(str(tmpdir))
     ret = tmpdir / 'default_upper.ini'
-    ret.write_text("""[DEFAULT]
-a = 4
-b = 5
-
-[TEST]
-a = 6
+    ret.write_text("""[TEST]
+a = @int:6
 """)
     return ret
 
@@ -49,15 +45,15 @@ def ini_file_noprofile(tmpdir):
     tmpdir = Path(str(tmpdir))
     ret = tmpdir / 'noprofile.ini'
     ret.write_text("""[DEFAULT]
-a = py:10
-b = str:11
+a = @py:10
+b = 11
 c = x:y
-d = int:12
-e = float:13.1
-f = bool:true
+d = @int:12
+e = @float:13.1
+f = @bool:true
 g = csv:a,b,c
-h = none
-i = 1e-3
+h = @none
+i = @float:1e-3
 j = true
 k = k
 """)
@@ -69,8 +65,8 @@ def env_file(tmpdir):
     tmpdir = Path(str(tmpdir))
     ret = tmpdir / 'env.env'
     ret.write_text("""
-default_a=1
-b=2
+default_a=@int:1
+b=@int:2
 """)
     return ret
 
