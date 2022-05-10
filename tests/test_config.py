@@ -57,3 +57,20 @@ def test_profile(ini_file, ini_file_nodefault):
         assert newconf.a == 6
         assert newconf.b == 2
     assert config == oldconf
+
+
+def test_use_profile_base_none():
+    config = ProfileConfig.load(
+        {"default": {"a": 1, "b": 2}, "p1": {"a": 6}, "p2": {"a": 7}}
+    )
+    ProfileConfig.use_profile(config, "p1", None)
+    assert config.a == 6
+    assert "b" not in config
+
+    ProfileConfig.use_profile(config, "default")
+    conf2 = ProfileConfig.use_profile(config, "p2", None, copy=True)
+    assert conf2.a == 7
+    assert "b" not in conf2
+
+    assert config.a == 1
+    assert config.b == 2

@@ -87,7 +87,8 @@ class ProfileConfig:
         pool = conf[POOL_KEY]
         if copy:
             out = Diot({POOL_KEY: pool, META_KEY: conf[META_KEY].copy()})
-            out.update(pool[base])
+            if base is not None:
+                out.update(pool[base])
             out[META_KEY]["current_profile"] = profile
             out[META_KEY]["base_profile"] = base
             out.update(pool[profile])
@@ -99,7 +100,8 @@ class ProfileConfig:
                 continue
             del conf[key]
 
-        conf.update(pool[base])
+        if base is not None:
+            conf.update(pool[base])
         conf.update(pool[profile])
         conf[META_KEY]["current_profile"] = profile
         conf[META_KEY]["base_profile"] = base
