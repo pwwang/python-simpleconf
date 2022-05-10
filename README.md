@@ -39,7 +39,7 @@ from simpleconf import Config
 # Load a single file
 conf = Config.load('~/xxx.ini')
 # load multiple files, later files override previous ones
-conf = config._load(
+conf = Config.load(
    '~/xxx.ini', '~/xxx.env', '~/xxx.yaml', '~/xxx.toml',
    '~/xxx.json', 'simpleconf.osenv', {'a': 3}
 )
