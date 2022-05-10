@@ -132,6 +132,19 @@ class ProfileConfig:
         return list(conf[POOL_KEY])
 
     @staticmethod
+    def has_profile(conf: Diot, profile: str) -> bool:
+        """Check if the configuration has the given profile
+
+        Args:
+            conf: The configuration object by the `load` function
+            profile: The profile to check
+
+        Returns:
+            Whether the configuration has the given profile
+        """
+        return profile in conf[POOL_KEY]
+
+    @staticmethod
     @contextmanager
     def with_profile(conf: Diot, profile: str, base: str = "default") -> Diot:
         """A context manager to use the given profile

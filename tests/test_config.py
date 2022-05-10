@@ -22,6 +22,7 @@ def test_profile(ini_file, ini_file_nodefault):
 
     assert ProfileConfig.current_profile(config) == "default"
     assert ProfileConfig.base_profile(config) == "default"
+    assert ProfileConfig.has_profile(config, "default")
     assert ProfileConfig.profiles(config) == ["default", "test"]
     assert ProfileConfig.pool(config) == {
         "default": {"a": 1, "b": 2},
