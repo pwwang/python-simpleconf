@@ -34,7 +34,7 @@ class OsenvLoader(Loader):
 
     def loading(self, conf: Any, ignore_nonexist: bool = False) -> Diot:
         """Load the configuration from environment variables"""
-        prefix = f"{conf[:-6]}_"
+        prefix = f"{conf[:-6]}_" if len(conf) > 6 else ""
         len_prefix = len(prefix)
         out = Diot()
         for k, v in environ.items():
@@ -47,7 +47,7 @@ class OsenvLoader(Loader):
         conf: Any,
         ignore_nonexist: bool = False,
     ) -> Diot:
-        prefix = f"{conf[:-6]}_"
+        prefix = f"{conf[:-6]}_" if len(conf) > 6 else ""
         len_prefix = len(prefix)
         out = Diot()
         for k, v in environ.items():

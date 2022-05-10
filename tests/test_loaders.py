@@ -139,6 +139,12 @@ def test_osenv_loader():
     assert isinstance(loaded, Diot)
     assert loaded == {"A": "1", "DEFAULT_B": "2"}
 
+    loaded = loader.load(".osenv")
+    assert isinstance(loaded, Diot)
+    assert len(loaded) > 2
+    assert loaded.SIMPLECONF_TEST_A == "1"
+    assert loaded.SIMPLECONF_TEST_DEFAULT_B == "2"
+
     with pytest.warns(UserWarning, match="No profile name found"):
         loaded = loader.load_with_profiles("SIMPLECONF_TEST.osenv")
     assert isinstance(loaded, Diot)
