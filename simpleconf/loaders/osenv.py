@@ -32,7 +32,7 @@ class OsenvLoader(Loader):
         toml_caster,
     ]
 
-    def loading(self, conf: Any) -> Diot:
+    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Diot:
         """Load the configuration from environment variables"""
         prefix = f"{conf[:-6]}_"
         len_prefix = len(prefix)
@@ -42,7 +42,11 @@ class OsenvLoader(Loader):
                 out[k[len_prefix :]] = v
         return out
 
-    def load_with_profiles(self, conf: Any) -> Diot:
+    def load_with_profiles(
+        self,
+        conf: Any,
+        ignore_nonexist: bool = False,
+    ) -> Diot:
         prefix = f"{conf[:-6]}_"
         len_prefix = len(prefix)
         out = Diot()

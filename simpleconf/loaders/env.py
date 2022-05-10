@@ -34,13 +34,19 @@ class EnvLoader(Loader):
         toml_caster,
     ]
 
-    def loading(self, conf: Any) -> Diot:
+    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Diot:
         """Load the configuration from a .env file"""
+        if not self._exists(conf, ignore_nonexist):
+            return Diot()
         return Diot(dotenv.main.DotEnv(conf).dict())
 
-    def load_with_profiles(self, conf: Any) -> Diot:
+    def load_with_profiles(
+        self,
+        conf: Any,
+        ignore_nonexist: bool = False,
+    ) -> Diot:
         """Load and cast the configuration from a .env file with profiles"""
-        envs = self.loading(conf)
+        envs = self.loading(conf, ignore_nonexist)
         out = Diot()
         for k, v in envs.items():
             if "_" not in k:

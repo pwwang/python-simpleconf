@@ -10,13 +10,15 @@ class Config:
     """The configuration class"""
 
     @staticmethod
-    def load(*configs) -> Diot:
+    def load(*configs, ignore_nonexist: bool = False) -> Diot:
         """Load the configuration from the files, or other configurations
 
         Args:
             *configs: The configuration files or other configurations to load
                 Latter ones will override the former ones for items with the
                 same keys recursively.
+            ignore_nonexist: Whether to ignore non-existent files
+                Otherwise, will raise errors
 
         Returns:
             A Diot object with the loaded configurations
@@ -25,7 +27,7 @@ class Config:
         for conf in configs:
             ext = config_to_ext(conf)
             loader = get_loader(ext)
-            loaded = loader.load(conf)
+            loaded = loader.load(conf, ignore_nonexist)
             out.update(loaded)
 
         return out
@@ -35,13 +37,15 @@ class ProfileConfig:
     """The configuration class with profile support"""
 
     @staticmethod
-    def load(*configs) -> Diot:
+    def load(*configs, ignore_nonexist: bool = False) -> Diot:
         """Load the configuration from the files, or other configurations
 
         Args:
             *configs: The configuration files or other configurations to load
                 Latter ones will override the former ones for items with the
                 same profile and keys recursively.
+            ignore_nonexist: Whether to ignore non-existent files
+                Otherwise, will raise errors
         """
         out = Diot({POOL_KEY: Diot()})
         pool = out[POOL_KEY]
@@ -52,7 +56,7 @@ class ProfileConfig:
         for conf in configs:
             ext = config_to_ext(conf)
             loader = get_loader(ext)
-            loaded = loader.load_with_profiles(conf)
+            loaded = loader.load_with_profiles(conf, ignore_nonexist)
             for profile, value in loaded.items():
                 profile = profile.lower()
                 pool.setdefault(profile, Diot())
