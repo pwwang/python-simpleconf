@@ -11,8 +11,6 @@ license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/pwwang/simpleconf"
 repository = "https://github.com/pwwang/simpleconf"
-[[tool.poetry.packages]]
-include = "simpleconf.py"
 
 [tool.poetry.dependencies]
 python = "^3.7"
