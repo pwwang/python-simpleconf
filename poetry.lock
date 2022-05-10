@@ -224,15 +224,16 @@ docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
 
 [extras]
-all = ["python-dotenv", "pyyaml", "rtoml"]
-dotenv = ["python-dotenv"]
+all = ["iniconfig", "python-dotenv", "pyyaml", "rtoml"]
+env = ["python-dotenv"]
+ini = ["iniconfig"]
 toml = ["rtoml"]
 yaml = ["pyyaml"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "3947739b521599f06240f26aca39f6a92c700502f42257d3b21c5dc13ab48828"
+content-hash = "4ead75a948eec13dd73a8a2bdc93a00831f0dab5b6decc930539483988097175"
 
 [metadata.files]
 atomicwrites = [
