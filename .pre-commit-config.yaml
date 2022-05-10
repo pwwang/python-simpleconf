@@ -11,7 +11,7 @@ repos:
     hooks:
     -   id: flake8
         name: Run flake8
-        files: ^simpleconf\.py
+        files: ^simpleconf/.+\.py$
         pass_filenames: true
         entry: flake8
         types: [python]
@@ -23,14 +23,14 @@ repos:
         args:
             - get_ver() { echo $(egrep "^__version|^version" $1 | cut -d= -f2 | sed 's/\"\| //g'); };
               v1=`get_ver pyproject.toml`;
-              v2=`get_ver simpleconf.py`;
+              v2=`get_ver simpleconf/__init__.py`;
               if [[ $v1 == $v2 ]]; then exit 0; else exit 1; fi
         pass_filenames: false
-        files: ^pyproject\.toml|simpleconf\.py$
+        files: ^pyproject\.toml|simpleconf/__init__\.py$
     -   id: pytest
         name: Run pytest
         entry: pytest
         language: system
         args: [tests/]
         pass_filenames: false
-        files: ^tests/.+$|simpleconf\.py$
+        files: ^tests/.+$|simpleconf/.+\.py$

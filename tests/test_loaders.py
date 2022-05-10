@@ -25,9 +25,10 @@ def test_env_loader(env_file):
     assert isinstance(loaded, Diot)
     assert loaded == {"default_a": 1, "b": 2}
 
-    loaded = loader.load_with_profiles(env_file)
+    with pytest.warns(UserWarning):
+        loaded = loader.load_with_profiles(env_file)
     assert isinstance(loaded, Diot)
-    assert loaded == {"default_a": 1, "b": 2}
+    assert loaded == {"default": {"a": 1}}
 
 def test_init_loader(ini_file_noprofile, ini_file, ini_file_nodefault):
     loader = get_loader("ini")

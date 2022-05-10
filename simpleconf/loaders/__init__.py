@@ -29,5 +29,4 @@ class Loader(ABC):
             return cast(self.loading(conf), self.__class__.CASTERS)
         return self.loading(conf)
 
-
     load_with_profiles = load

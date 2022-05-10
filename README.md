@@ -1,10 +1,14 @@
 # simpleconf
-Simple configuration management with python
+
+Simple configuration management for python
 
 ## Installation
 ```shell
 # released version
 pip install python-simpleconf
+
+# Install support for ini
+pip install python-simpleconf[ini]
 
 # Install support for dotenv
 pip install python-simpleconf[dotenv]
@@ -20,134 +24,235 @@ pip install python-simpleconf[all]
 ```
 
 ## Features
-- Just simple
-- Profile switching
-- Supported formats:
-  - `.ini/.cfg/.config` (using `ConfigParse`)
-  - `.env` (using `python-dotenv`)
-  - `.yaml/.yml` (using `pyyaml`)
-  - `.toml` (using `toml`)
-  - `.json` (using `json`)
-  - systme environment variables
-  - python dictionaries
-- Value casting
+- Multiple formats supported
+- Type casting
+- Profile support
+- Simple APIs
 
 ## Usage
+
 ### Loading configurations
-```python
-from simpleconf import config
-
-# load a single file
-config._load('~/xxx.ini')
-# load multiple files
-config._load(
-   '~/xxx.ini', '~/xxx.env', '~/xxx.yaml', '~/xxx.toml',
-   '~/xxx.json', 'simpleconf.osenv', {'default': {'a': 3}}
-)
-```
-
-For `.env` configurations, variable name uses the profile name as prefix. For example:
-```shell
-default_a=1
-default_b=py:1
-test_a=2
-```
-```python
-config._load('xxx.env')
-config.a == '1'
-config.b == 1
-config._use('test')
-config.a == '2'
-config._revert()
-config.a == '1'
-```
-Use `with` to temporarily switch profile:
-```python
-config._load('xxx.env')
-config.a == '1'
-config.b == 1
-with config._with('test') as cfg
-   config.a == '2'
-config.a == '1'
-```
-
-For `.osenv` configurations, for example `simpleconf.osenv`, only variables with names start with `SIMPLECONF_` will be loaded, then the upper-cased profile name should follow.
-```python
-os.environ['SIMPLECONF_DEFAULT_A'] = 1
-os.environ['SIMPLECONF_test_A'] = 2
-config._load('simpleconf.osenv')
-config.A == 1
-config._use('test')
-config.A == 2
-```
-
-Priority is decided by the order that configurations being loaded.
-In the above example, `config.A` is `3` anyway no matter whatever value is assigned in prior configurations.
-
-Hint: to get system environment variables always have the highest priority, they should be always loaded last.
-
-### Switching profiles
-Like `ConfigParse`, the default profile (section) will be loaded first.
-
-```ini
-[default]
-a = 1
-b = 2
-
-[test]
-a = 3
-```
-
-```python
-config._load('xxx.ini')
-
-config.a == 1
-config.b == 2
-
-config._use('test')
-config.a == 3
-config.b == 2
-```
-
-Note that `simpleconf` profiles are case-insensitive, and we use uppercase names for the first-layer configurations:
-```yaml
-default:
-   complicated_conf:
-      a = 9
-```
-
-```python
-config._load('xxx.yaml')
-config.complicated_conf.a == 9
-```
-
-### Getting configuration values
-
-`simpleconf.config` is an instance of [`ConfigBox`](https://github.com/cdgriffith/Box#configbox) from `python-box`. All methods supported by `ConfigBox` is applicable with `simpleconf.config`.
-Additionally, we also extended `get` method to allow user-defined `cast` method:
-```python
-config._load('xxx.ini')
-config.int('A') == 1
-config.float('A') == 1.0
-
-def version(x):
-	return '%s.0.0' % x
-
-config.get('A', cast = version) == '1.0.0'
-```
-
-### None-profile mode
-```yaml
-a: 1
-b: 2
-```
 
 ```python
 from simpleconf import Config
-config = Config(with_profile = False)
-config._load('xxx.yaml')
-config.A == 1
-config.B == 2
+
+# Load a single file
+conf = Config.load('~/xxx.ini')
+# load multiple files, later files override previous ones
+conf = config._load(
+   '~/xxx.ini', '~/xxx.env', '~/xxx.yaml', '~/xxx.toml',
+   '~/xxx.json', 'simpleconf.osenv', {'a': 3}
+)
 ```
 
-Note that in .ini configuration file, you still have to use the section name `[DEFAULT]`
+### Accessing configuration values
+
+```python
+from simpleconf import Config
+
+conf = Config.load({'a': 1, 'b': {'c': 2}})
+# conf.a == 1
+# conf.b.c == 2
+```
+
+### Supported formats
+
+- `.ini/.cfg/.config` (parsed by `iniconfig`).
+  - For confiurations without profiles, an ini-like configuration like must have a `default` (case-insensitive) section.
+- `.env` (using `python-dotenv`). A file with environment variables.
+- `.yaml/.yml` (using `pyyaml`). A file with YAML data.
+- `.toml` (using `rtoml`). A file with TOML data.
+- `.json` (using `json`). A file with JSON data.
+- `XXX.osenv`: System environment variables with prefix `XXX_` (case-sensitive) is used.
+  - `XXX_A=1` will be loaded as `conf.A = 1`.
+- python dictionary.
+
+### Profile support
+
+#### Loading configurations
+
+##### Loading dictionaries
+
+```python
+from simpleconf import ProfileConfig
+
+conf = ProfileConfig.load({'default': {'a': 1})
+# conf.a == 1
+```
+
+##### Loading a `.env` file
+
+`config.env`
+```env
+# config.env
+default_a=1
+```
+
+```python
+from simpleconf import ProfileConfig
+
+conf = ProfileConfig.load('config.env')
+# conf.a == 1
+```
+
+##### Loading ini-like configuration files
+
+```ini
+# config.ini
+[default]
+a = 1
+```
+
+```python
+from simpleconf import ProfileConfig
+
+conf = ProfileConfig.load('config.ini')
+# conf.a == 1
+```
+
+##### Loading JSON files
+
+`config.json`
+```json
+{
+  "default": {
+    "a": 1
+  }
+}
+```
+
+```python
+from simpleconf import ProfileConfig
+
+conf = ProfileConfig.load('config.json')
+# conf.a == 1
+```
+
+##### Loading system environment variables
+
+```python
+from os import environ
+from simpleconf import ProfileConfig
+
+environ['XXX_DEFAULT_A'] = '1'
+
+conf = ProfileConfig.load('XXX.osenv')
+# conf.a == 1
+```
+
+##### Loading TOML files
+
+```toml
+# config.toml
+[default]
+a = 1
+```
+
+```python
+from simpleconf import ProfileConfig
+
+conf = ProfileConfig.load('config.toml')
+# conf.a == 1
+```
+
+##### Loading YAML files
+
+```yaml
+# config.yaml
+default:
+  a: 1
+```
+
+```python
+from simpleconf import ProfileConfig
+
+conf = ProfileConfig.load('config.yaml')
+# conf.a == 1
+```
+
+#### Switching profile
+
+```python
+from simpleconf import ProfileConfig
+
+conf = ProfileConfig.load(
+   {'default': {'a': 1, 'b': 2}, 'dev': {'a': 3}, 'prod': {'a': 4}}
+)
+# conf.a == 1; conf.b == 2
+# ProfileConfig.profiles(conf) == ['default', 'dev', 'prod']
+# ProfileConfig.pool(conf) == {'default': {'a': 1, 'b': 2}, 'dev': {'a': 3}, 'prod': {'a': 4}}
+# ProfileConfig.current_profile(conf) == 'default'
+# ProfileConfig.base_profile(conf) == 'default'
+
+ProfileConfig.use_profile(conf, 'dev')
+# conf.a == 3; conf.b == 2
+# ProfileConfig.current_profile(conf) == 'dev'
+# ProfileConfig.base_profile(conf) == 'default'
+
+# use a different base profile
+ProfileConfig.use_profile(conf, 'prod', base='dev')
+# conf.a == 4   # No 'b' in conf
+# ProfileConfig.current_profile(conf) == 'prod'
+# ProfileConfig.base_profile(conf) == 'dev'
+
+# Copy configuration instead of inplace modification
+conf2 = ProfileConfig.use_profile(conf, 'dev', copy=True)
+# conf2 is not conf
+# conf2.a == 3; conf2.b == 2
+
+# Use a context manager
+with ProfileConfig.use_profile(conf2, 'default'):
+    conf2.a == 3
+    conf2.b == 2
+# conf2.a == 3; conf2.b == 2
+```
+
+### Type casting
+
+For configuration formats with type support, including dictionary, no type casting is done by this library, except that for TOML files.
+
+TOML does not support `None` value in python. We use `rtoml` library to parse TOML files, which dumps `None` as `"null"`. So a `null_caster` is used to cast `"null"` to `None`.
+
+A `none_caster` is also enabled for TOML files, a pure string of `"@none"` is casted to `None`.
+
+For other formats, following casters are supported:
+
+#### Int caster
+
+```python
+from os import environ
+from simpleconf import Config
+
+environ['XXX_A'] = '@int:1'
+
+conf = Config.load('XXX.osenv')
+# conf.a == 1 # int
+```
+
+#### Float caster
+
+`@float:1.0` -> `1.0`
+
+### Bool caster
+
+`@bool:true` -> `True`
+`@bool:false` -> `False`
+
+#### Python caster
+
+Values are casted by `ast.literal_eval()`.
+
+```python
+"@python:1" => 1  # or
+"@py:1" => 1
+"@py:1.0` -> `1.0`
+"@py:[1, 2, 3]" => [1, 2, 3]
+```
+
+#### JSON caster
+
+`@json:{"a": 1}` -> `{"a": 1}`
+
+#### TOML caster
+
+`@toml:a = 1` -> `{"a": 1}`

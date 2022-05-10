@@ -1,8 +1,11 @@
+import warnings
+from pathlib import Path
 from typing import Any
 from simpleconf.utils import require_package
 from diot import Diot
 
 from ..caster import (
+    cast,
     int_caster,
     float_caster,
     bool_caster,
@@ -34,3 +37,19 @@ class EnvLoader(Loader):
     def loading(self, conf: Any) -> Diot:
         """Load the configuration from a .env file"""
         return Diot(dotenv.main.DotEnv(conf).dict())
+
+    def load_with_profiles(self, conf: Any) -> Diot:
+        """Load and cast the configuration from a .env file with profiles"""
+        envs = self.loading(conf)
+        out = Diot()
+        for k, v in envs.items():
+            if "_" not in k:
+                warnings.warn(
+                    f"{Path(conf).name}: No profile name found in key: {k}"
+                )
+                continue
+            profile, key = k.split("_", 1)
+            profile = profile.lower()
+            out.setdefault(profile, Diot())[key] = v
+
+        return cast(out, self.__class__.CASTERS)

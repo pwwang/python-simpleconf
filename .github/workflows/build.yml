@@ -27,8 +27,9 @@ jobs:
           python -m pip install poetry
           poetry config virtualenvs.create false
           poetry install -v
+          poetry install -E all
       - name: Run flake8
-        run: flake8 simpleconf.py
+        run: flake8 simpleconf
       - name: Test with pytest
         run: pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
