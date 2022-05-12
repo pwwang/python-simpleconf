@@ -74,3 +74,15 @@ def test_use_profile_base_none():
 
     assert config.a == 1
     assert config.b == 2
+
+def test_detach():
+    config = ProfileConfig.load(
+        {"default": {"a": 1, "b": [2, 3]}, "p1": {"a": 6}}
+    )
+    ProfileConfig.use_profile(config, "p1")
+    diot = ProfileConfig.detach(config)
+    assert diot.a == 6
+    assert diot.b == [2, 3]
+    assert len(diot) == 2
+    diot.b[0] = 10
+    assert config.b == [2, 3]

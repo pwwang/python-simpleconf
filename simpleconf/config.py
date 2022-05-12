@@ -117,6 +117,25 @@ class ProfileConfig:
         return conf[META_KEY]["base_profile"]
 
     @staticmethod
+    def detach(conf: Diot) -> Diot:
+        """Detach the configurations of current profile from the
+        configuration object.
+        Profile information will be removed.
+
+        Args:
+            conf: The configuration object by the `load` function
+
+        Returns:
+            The configurations with the current profile
+        """
+        out = Diot()
+        for key in conf:
+            if key in (POOL_KEY, META_KEY):
+                continue
+            out[key] = conf[key]
+        return out
+
+    @staticmethod
     def pool(conf: Diot) -> Diot:
         """Get the pool"""
         return conf[POOL_KEY]
