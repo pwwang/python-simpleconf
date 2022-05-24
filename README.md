@@ -43,6 +43,9 @@ conf = Config.load(
    '~/xxx.ini', '~/xxx.env', '~/xxx.yaml', '~/xxx.toml',
    '~/xxx.json', 'simpleconf.osenv', {'a': 3}
 )
+
+# Load a single file with a different loader
+conf = Config.load('~/xxx.ini', loader="toml")
 ```
 
 ### Accessing configuration values
