@@ -6,8 +6,12 @@ from simpleconf import Config, ProfileConfig
 pytest_plugins = ["tests.fixt_simpleconf"]
 
 
-def test_nonprofile(ini_file, dict_obj):
+def test_nonprofile(ini_file, ini_file_rc, dict_obj):
     config = Config.load(dict_obj)
+    assert config.default.a == 1
+    assert config.b == 2
+
+    config = Config.load_one(dict_obj)
     assert config.default.a == 1
     assert config.b == 2
 
@@ -16,8 +20,12 @@ def test_nonprofile(ini_file, dict_obj):
     assert config.a == 1
     assert config.b == 2
 
+    config = Config.load_one(ini_file_rc, loader="toml")
+    assert config.DEFAULT.a == 7
+    assert config.TEST.a == 9
 
-def test_profile(ini_file, ini_file_nodefault):
+
+def test_profile(ini_file, ini_file_rc, ini_file_nodefault):
     config = ProfileConfig.load(ini_file, ini_file_nodefault)
 
     assert ProfileConfig.current_profile(config) == "default"
@@ -57,6 +65,12 @@ def test_profile(ini_file, ini_file_nodefault):
         assert newconf.a == 6
         assert newconf.b == 2
     assert config == oldconf
+
+    config = ProfileConfig.load_one(ini_file_rc)
+    assert config.a == "7"
+
+    config = ProfileConfig.load_one(ini_file_rc, loader="toml")
+    assert config.a == 7
 
 
 def test_use_profile_base_none():

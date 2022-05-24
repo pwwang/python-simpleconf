@@ -35,7 +35,7 @@ pytest = "^7"
 pytest-cov = "^3"
 
 [tool.pytest.ini_options]
-addopts = "-vv --cov=simpleconf --cov-report xml:cov.xml --cov-report term-missing"
+addopts = "-vv -p no:asyncio --cov=simpleconf --cov-report xml:cov.xml --cov-report term-missing"
 filterwarnings = [
     "error"
 ]

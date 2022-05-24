@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import List
+from typing import Any, List
 
 from diot import Diot
 
@@ -32,12 +32,35 @@ class Config:
 
         return out
 
+    @staticmethod
+    def load_one(
+        config, loader: str = None, ignore_nonexist: bool = False
+    ) -> Diot:
+        """Load the configuration from the file
+
+        Args:
+            config: The configuration file to load
+            loader: The loader to use
+            ignore_nonexist: Whether to ignore non-existent files
+                Otherwise, will raise errors
+
+        Returns:
+            A Diot object with the loaded configuration
+        """
+        if loader is None:
+            ext = config_to_ext(config)
+            loader = get_loader(ext)
+        else:
+            loader = get_loader(loader)
+
+        return loader.load(config, ignore_nonexist)
+
 
 class ProfileConfig:
     """The configuration class with profile support"""
 
     @staticmethod
-    def load(*configs, ignore_nonexist: bool = False) -> Diot:
+    def load(*configs: Any, ignore_nonexist: bool = False) -> Diot:
         """Load the configuration from the files, or other configurations
 
         Args:
@@ -61,6 +84,44 @@ class ProfileConfig:
                 profile = profile.lower()
                 pool.setdefault(profile, Diot())
                 pool[profile].update(value)
+
+        ProfileConfig.use_profile(out, "default")
+        return out
+
+    @staticmethod
+    def load_one(
+        conf: Any, loader: str = None, ignore_nonexist: bool = False
+    ) -> Diot:
+        """Load the configuration from the file
+
+        Args:
+            conf: The configuration file to load
+            loader: The loader to use. Will detect from conf by default
+            ignore_nonexist: Whether to ignore non-existent files
+                Otherwise, will raise errors
+
+        Returns:
+            A Diot object with the loaded configuration
+        """
+
+        out = Diot({POOL_KEY: Diot()})
+        pool = out[POOL_KEY]
+        out[META_KEY] = {
+            "current_profile": None,
+            "base_profile": None,
+        }
+
+        if loader is None:
+            ext = config_to_ext(conf)
+            loader = get_loader(ext)
+        else:
+            loader = get_loader(loader)
+
+        loaded = loader.load_with_profiles(conf, ignore_nonexist)
+        for profile, value in loaded.items():
+            profile = profile.lower()
+            pool.setdefault(profile, Diot())
+            pool[profile].update(value)
 
         ProfileConfig.use_profile(out, "default")
         return out
