@@ -34,12 +34,29 @@ def config_to_ext(conf: Any) -> str:
 
 def get_loader(ext: str) -> "Loader":
     """Get the loader for the extension"""
-    try:
-        module = import_module(f".loaders.{ext}", package=__package__)
-    except ModuleNotFoundError:
-        raise FormatNotSupported(f"{ext} is not supported.")
-    loader_name = f"{ext.capitalize()}Loader"
-    return getattr(module, loader_name)()
+    if ext == "dict":
+        from .loaders.dict import DictLoader
+        return DictLoader()
+    if ext == "env":
+        from .loaders.env import EnvLoader
+        return EnvLoader()
+    if ext == "ini":
+        from .loaders.ini import IniLoader
+        return IniLoader()
+    if ext == "json":
+        from .loaders.json import JsonLoader
+        return JsonLoader()
+    if ext == "osenv":
+        from .loaders.osenv import OsenvLoader
+        return OsenvLoader()
+    if ext == "toml":
+        from .loaders.toml import TomlLoader
+        return TomlLoader()
+    if ext == "yaml":
+        from .loaders.yaml import YamlLoader
+        return YamlLoader()
+
+    raise FormatNotSupported(f"{ext} is not supported.")
 
 
 def require_package(package: str) -> "ModuleType":
