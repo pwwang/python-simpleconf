@@ -18,9 +18,9 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 diot = "^0.1"
-python-dotenv = { version="^0.20", optional = true}
+python-dotenv = { version="^0.21", optional = true}
 pyyaml = { version="^6", optional = true}
-rtoml = {version = "^0.8", optional = true}
+rtoml = {version = "^0.9", optional = true}
 iniconfig = {version = "^1.1", optional = true}
 
 [tool.poetry.extras]
@@ -32,7 +32,7 @@ all = [ "iniconfig", "python-dotenv", "pyyaml", "rtoml"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^7"
-pytest-cov = "^3"
+pytest-cov = "^4"
 
 [tool.pytest.ini_options]
 addopts = "-vv -p no:asyncio --cov=simpleconf --cov-report xml:cov.xml --cov-report term-missing"
