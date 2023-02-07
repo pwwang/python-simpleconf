@@ -20,7 +20,7 @@ python = "^3.7"
 diot = "^0.1"
 python-dotenv = { version="^0.21", optional = true}
 pyyaml = { version="^6", optional = true}
-rtoml = {version = "^0.9", optional = true}
+rtoml = {version = "^0.8", optional = true}
 iniconfig = {version = "^1.1", optional = true}
 
 [tool.poetry.extras]
