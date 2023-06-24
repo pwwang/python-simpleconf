@@ -28,7 +28,7 @@ class Config:
             ext = config_to_ext(conf)
             loader = get_loader(ext)
             loaded = loader.load(conf, ignore_nonexist)
-            out.update(loaded)
+            out.update_recursively(loaded)
 
         return out
 
@@ -83,7 +83,7 @@ class ProfileConfig:
             for profile, value in loaded.items():
                 profile = profile.lower()
                 pool.setdefault(profile, Diot())
-                pool[profile].update(value)
+                pool[profile].update_recursively(value)
 
         ProfileConfig.use_profile(out, "default")
         return out
@@ -121,7 +121,7 @@ class ProfileConfig:
         for profile, value in loaded.items():
             profile = profile.lower()
             pool.setdefault(profile, Diot())
-            pool[profile].update(value)
+            pool[profile].update_recursively(value)
 
         ProfileConfig.use_profile(out, "default")
         return out
@@ -149,10 +149,10 @@ class ProfileConfig:
         if copy:
             out = Diot({POOL_KEY: pool, META_KEY: conf[META_KEY].copy()})
             if base is not None:
-                out.update(pool[base])
+                out.update_recursively(pool[base])
             out[META_KEY]["current_profile"] = profile
             out[META_KEY]["base_profile"] = base
-            out.update(pool[profile])
+            out.update_recursively(pool[profile])
             return out
 
         # copy = False
@@ -162,8 +162,8 @@ class ProfileConfig:
             del conf[key]
 
         if base is not None:
-            conf.update(pool[base])
-        conf.update(pool[profile])
+            conf.update_recursively(pool[base])
+        conf.update_recursively(pool[profile])
         conf[META_KEY]["current_profile"] = profile
         conf[META_KEY]["base_profile"] = base
 
