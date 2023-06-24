@@ -17,7 +17,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-diot = "^0.1"
+diot = "^0.2"
 python-dotenv = { version="^0.21", optional = true}
 pyyaml = { version="^6", optional = true}
 rtoml = {version = "^0.8", optional = true}
