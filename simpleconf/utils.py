@@ -1,4 +1,6 @@
 
+from __future__ import annotations
+
 from pathlib import Path
 from importlib import import_module
 from types import ModuleType
@@ -32,7 +34,7 @@ def config_to_ext(conf: Any) -> str:
     return out
 
 
-def get_loader(ext: str) -> "Loader":
+def get_loader(ext: str) -> Loader:
     """Get the loader for the extension"""
     if ext == "dict":
         from .loaders.dict import DictLoader
@@ -59,9 +61,21 @@ def get_loader(ext: str) -> "Loader":
     raise FormatNotSupported(f"{ext} is not supported.")
 
 
-def require_package(package: str) -> "ModuleType":
+def require_package(package: str, *fallbacks: str) -> ModuleType:
     """Require the package and return the module"""
     try:
         return import_module(package)
     except ModuleNotFoundError:
-        raise ImportError(f"{package} is not installed.")
+        for fallback in fallbacks:
+            try:
+                return import_module(fallback)
+            except ModuleNotFoundError:
+                pass
+
+        if fallbacks:
+            raise ImportError(
+                f"Neither '{package}' nor its fallbacks "
+                f"`{', '.join(fallbacks)}` is installed."
+            ) from None
+        else:
+            raise ImportError(f"'{package}' is not installed.") from None

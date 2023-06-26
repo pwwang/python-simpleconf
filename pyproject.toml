@@ -20,22 +20,24 @@ python = "^3.7"
 diot = "^0.2.1"
 python-dotenv = { version="^0.21", optional = true}
 pyyaml = { version="^6", optional = true}
-rtoml = {version = "^0.8", optional = true}
+# Use rtoml only when the wheel is available (linux)
+rtoml = {version = "^0.8", optional = true, python = "<3.11", platform = "linux"}
+tomli = {version = "^2.0", optional = true, python = "<3.11", markers = 'sys_platform != "linux"'}
 iniconfig = {version = "^2.0", optional = true}
 
 [tool.poetry.extras]
 ini = [ "iniconfig" ]
 env = [ "python-dotenv"]
 yaml = [ "pyyaml"]
-toml = [ "rtoml"]
-all = [ "iniconfig", "python-dotenv", "pyyaml", "rtoml"]
+toml = [ "rtoml", "tomli"]
+all = [ "iniconfig", "python-dotenv", "pyyaml", "rtoml", "tomli"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^7"
 pytest-cov = "^4"
 
 [tool.pytest.ini_options]
-addopts = "-vv -p no:asyncio --cov=simpleconf --cov-report xml:cov.xml --cov-report term-missing"
+# addopts = "-vv -p no:asyncio --cov=simpleconf --cov-report xml:cov.xml --cov-report term-missing"
 filterwarnings = [
     "error"
 ]

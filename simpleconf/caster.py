@@ -47,8 +47,8 @@ def _cast_bool(value: str) -> bool:
 
 def _cast_toml(value: str) -> Any:
     """Cast toml string"""
-    rtoml = require_package("rtoml")
-    return rtoml.loads(value)
+    toml = require_package("rtoml", "tomllib", "tomli")
+    return toml.loads(value)
 
 
 int_caster = type_caster("@int:", lambda x: int(float(x)))

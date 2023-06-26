@@ -8,7 +8,7 @@ from ..caster import (
 )
 from . import Loader
 
-rtoml = require_package("rtoml")
+toml = require_package("rtoml", "tomllib", "tomli")
 
 
 class TomlLoader(Loader):
@@ -24,5 +24,9 @@ class TomlLoader(Loader):
         if not self._exists(conf, ignore_nonexist):
             return Diot()
 
-        with open(conf) as f:
-            return Diot(rtoml.load(f))
+        if toml.__name__ in ("tomli", "tomllib"):  # pragma: no cover
+            with open(conf, "rb") as f:
+                return Diot(toml.load(f))
+
+        with open(conf, "r") as f:
+            return Diot(toml.load(f))
