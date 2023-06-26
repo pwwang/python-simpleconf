@@ -46,7 +46,7 @@ jobs:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: cov.xml
 
-  build:
+  build-windows:
     runs-on: windows-latest
     strategy:
       fail-fast: false
