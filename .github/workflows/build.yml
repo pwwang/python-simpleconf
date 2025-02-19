@@ -31,7 +31,7 @@ jobs:
       - name: Run flake8
         run: flake8 simpleconf
       - name: Test with pytest
-        run: pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+        run: pytest tests/ --junitxml=junit/test-results-ubuntu-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
         with:
@@ -70,7 +70,7 @@ jobs:
       - name: Run flake8
         run: flake8 simpleconf
       - name: Test with pytest
-        run: pytest tests/ --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+        run: pytest tests/ --junitxml=junit/test-results-windows-${{ matrix.python-version }}.xml
       - name: Upload pytest test results
         uses: actions/upload-artifact@v4
         with:
