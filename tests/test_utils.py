@@ -1,4 +1,4 @@
-# import sys
+import sys
 import pytest
 from simpleconf.exceptions import FormatNotSupported
 from simpleconf.utils import (
@@ -42,12 +42,12 @@ def test_get_loader_error():
 
 def test_require_package():
     module = require_package("rtoml", "tomllib", "tomli")
-    # if sys.version_info >= (3, 11):
-    #     assert module.__name__ == "tomllib"
-    # elif sys.platform != "linux":
-    #     assert module.__name__ == "tomli"
-    # else:
-    assert module.__name__ == "rtoml"
+    if sys.platform == "linux":
+        assert module.__name__ == "rtoml"
+    elif sys.version_info >= (3, 11):
+        assert module.__name__ == "tomllib"
+    else:
+        assert module.__name__ == "tomli"
 
     with pytest.raises(ImportError):
         require_package("not_installed")
