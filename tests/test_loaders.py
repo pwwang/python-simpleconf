@@ -3,12 +3,25 @@ import pytest
 from os import environ
 from diot import Diot
 from simpleconf.utils import get_loader
+from simpleconf.loaders.dict import DictLoader
 
 pytest_plugins = ["tests.fixt_simpleconf"]
 
 
 def test_dict_loader():
     loader = get_loader("dict")
+
+    loaded = loader.load({"a": 1})
+    assert isinstance(loaded, Diot)
+    assert loaded == {"a": 1}
+
+    loaded = loader.load_with_profiles({"a": 1})
+    assert isinstance(loaded, Diot)
+    assert loaded == {"a": 1}
+
+
+def test_direct_loader():
+    loader = get_loader(DictLoader())
 
     loaded = loader.load({"a": 1})
     assert isinstance(loaded, Diot)

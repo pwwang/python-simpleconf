@@ -1,6 +1,6 @@
 import warnings
 from pathlib import Path
-from typing import Any, Callable, List
+from typing import Any
 from simpleconf.utils import require_package
 from diot import Diot
 
@@ -23,7 +23,7 @@ dotenv = require_package("dotenv")
 class EnvLoader(Loader):
     """Env file loader"""
 
-    CASTERS: List[Callable[[str, bool], Any]] = [
+    CASTERS = [
         int_caster,
         float_caster,
         bool_caster,

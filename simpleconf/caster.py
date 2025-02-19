@@ -4,7 +4,6 @@ import json
 from typing import Any, Callable, Sequence, TYPE_CHECKING
 from ast import literal_eval
 
-from .utils import require_package
 
 if TYPE_CHECKING:
     from diot import Diot
@@ -49,6 +48,8 @@ def _cast_bool(value: str) -> bool:
 
 def _cast_toml(value: str) -> Any:
     """Cast toml string"""
+    from .utils import require_package
+
     toml = require_package("rtoml", "tomllib", "tomli")
     return toml.loads(value)
 

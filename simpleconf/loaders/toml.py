@@ -24,9 +24,9 @@ class TomlLoader(Loader):
         if not self._exists(conf, ignore_nonexist):
             return Diot()
 
-        if toml.__name__ in ("tomli", "tomllib"):  # pragma: no cover
+        if toml.__name__ in ("tomli", "tomllib"):
             with open(conf, "rb") as f:
                 return Diot(toml.load(f))
 
-        with open(conf, "r") as f:
+        with open(conf, "r") as f:  # pragma: no cover
             return Diot(toml.load(f))
