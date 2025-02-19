@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 from contextlib import contextmanager
-from typing import Any, List
+from typing import TYPE_CHECKING, Any, List, Generator
 
 from diot import Diot
 
 from .utils import config_to_ext, get_loader, POOL_KEY, META_KEY
+
+if TYPE_CHECKING:
+    from .loaders import Loader
 
 
 class Config:
@@ -34,7 +39,9 @@ class Config:
 
     @staticmethod
     def load_one(
-        config, loader: str = None, ignore_nonexist: bool = False
+        config,
+        loader: str | Loader | None = None,
+        ignore_nonexist: bool = False,
     ) -> Diot:
         """Load the configuration from the file
 
@@ -90,7 +97,9 @@ class ProfileConfig:
 
     @staticmethod
     def load_one(
-        conf: Any, loader: str = None, ignore_nonexist: bool = False
+        conf: Any,
+        loader: str | Loader | None = None,
+        ignore_nonexist: bool = False,
     ) -> Diot:
         """Load the configuration from the file
 
@@ -167,6 +176,8 @@ class ProfileConfig:
         conf[META_KEY]["current_profile"] = profile
         conf[META_KEY]["base_profile"] = base
 
+        return conf
+
     @staticmethod
     def current_profile(conf: Diot) -> str:
         """Get the current profile"""
@@ -228,7 +239,11 @@ class ProfileConfig:
 
     @staticmethod
     @contextmanager
-    def with_profile(conf: Diot, profile: str, base: str = "default") -> Diot:
+    def with_profile(
+        conf: Diot,
+        profile: str,
+        base: str = "default",
+    ) -> Generator[Diot, None, None]:
         """A context manager to use the given profile
 
         Args:

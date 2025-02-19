@@ -34,7 +34,7 @@ def test_profile(ini_file, ini_file_rc, ini_file_nodefault):
     assert ProfileConfig.profiles(config) == ["default", "test"]
     assert ProfileConfig.pool(config) == {
         "default": {"a": 1, "b": 2},
-        "test": {"a": 6}
+        "test": {"a": 6},
     }
     assert config.a == 1
     assert config.b == 2
@@ -88,6 +88,7 @@ def test_use_profile_base_none():
 
     assert config.a == 1
     assert config.b == 2
+
 
 def test_detach():
     config = ProfileConfig.load(

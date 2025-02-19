@@ -1,15 +1,12 @@
-
 from __future__ import annotations
 
 from pathlib import Path
 from importlib import import_module
 from types import ModuleType
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from .exceptions import FormatNotSupported
-
-if TYPE_CHECKING:
-    from .loaders import Loader
+from .loaders import Loader
 
 POOL_KEY = "_SIMPLECONF_POOL"
 META_KEY = "_SIMPLECONF_META"
@@ -34,28 +31,38 @@ def config_to_ext(conf: Any) -> str:
     return out
 
 
-def get_loader(ext: str) -> Loader:
+def get_loader(ext: str | Loader) -> Loader:
     """Get the loader for the extension"""
+    if isinstance(ext, Loader):
+        return ext
+
     if ext == "dict":
         from .loaders.dict import DictLoader
+
         return DictLoader()
     if ext == "env":
         from .loaders.env import EnvLoader
+
         return EnvLoader()
     if ext == "ini":
         from .loaders.ini import IniLoader
+
         return IniLoader()
     if ext == "json":
         from .loaders.json import JsonLoader
+
         return JsonLoader()
     if ext == "osenv":
         from .loaders.osenv import OsenvLoader
+
         return OsenvLoader()
     if ext == "toml":
         from .loaders.toml import TomlLoader
+
         return TomlLoader()
     if ext == "yaml":
         from .loaders.yaml import YamlLoader
+
         return YamlLoader()
 
     raise FormatNotSupported(f"{ext} is not supported.")

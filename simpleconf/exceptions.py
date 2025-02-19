@@ -1,4 +1,3 @@
-
 class FormatNotSupported(Exception):
     """Raised if format not supported"""
 

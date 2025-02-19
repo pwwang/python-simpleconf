@@ -36,6 +36,7 @@ def test_env_loader(env_file):
     loaded = loader.load("env_file_not_exist", ignore_nonexist=True)
     assert loaded == {}
 
+
 def test_ini_loader(ini_file_noprofile, ini_file, ini_file_nodefault):
     loader = get_loader("ini")
     loaded = loader.load(ini_file_noprofile)
@@ -101,6 +102,7 @@ def test_json_loader(json_file):
     loaded = loader.load("json_file_not_exist", ignore_nonexist=True)
     assert loaded == {}
 
+
 def test_toml_loader(toml_file):
     loader = get_loader("toml")
 
@@ -115,6 +117,7 @@ def test_toml_loader(toml_file):
     loaded = loader.load("toml_file_not_exist", ignore_nonexist=True)
     assert loaded == {}
 
+
 def test_yaml_loader(yaml_file):
     loader = get_loader("yaml")
 
@@ -128,6 +131,7 @@ def test_yaml_loader(yaml_file):
 
     loaded = loader.load("yaml_file_not_exist", ignore_nonexist=True)
     assert loaded == {}
+
 
 def test_osenv_loader():
     envs = environ

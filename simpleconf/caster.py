@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import json
-from typing import TYPE_CHECKING, Any, Callable, Sequence
+from typing import Any, Callable, Sequence, TYPE_CHECKING
 from ast import literal_eval
 
-from simpleconf.utils import require_package
+from .utils import require_package
 
 if TYPE_CHECKING:
     from diot import Diot
@@ -74,11 +76,11 @@ def cast_value(value: Any, casters: Sequence[Callable]) -> Any:
     return value
 
 
-def cast(conf: "Diot", casters: Sequence[Callable]) -> "Diot":
+def cast(conf: Diot, casters: Sequence[Callable]) -> Diot:
     """Cast the configuration"""
     for key, value in conf.items():
         if isinstance(value, dict):
-            conf[key] = cast(value, casters)
+            conf[key] = cast(value, casters)  # type: ignore[arg-type]
         else:
             conf[key] = cast_value(value, casters)
     return conf

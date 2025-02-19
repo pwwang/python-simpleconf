@@ -39,10 +39,10 @@ class OsenvLoader(Loader):
         out = Diot()
         for k, v in environ.items():
             if k.startswith(prefix):
-                out[k[len_prefix :]] = v
+                out[k[len_prefix:]] = v
         return out
 
-    def load_with_profiles(
+    def load_with_profiles(  # type: ignore[override]
         self,
         conf: Any,
         ignore_nonexist: bool = False,

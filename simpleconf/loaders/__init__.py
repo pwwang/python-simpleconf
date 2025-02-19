@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable, List
 
 from ..caster import cast
 
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class Loader(ABC):
 
-    CASTERS = None
+    CASTERS: List[Callable[[str, bool], Any]] | None = None
 
     @abstractmethod
     def loading(self, conf: Any, ignore_nonexist: bool) -> "Diot":
