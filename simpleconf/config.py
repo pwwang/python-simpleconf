@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import Any, List, Generator, TypeAlias, Union, Sequence
+from typing import Any, List, Generator, Union, Sequence
 
 from diot import Diot
 
 from .utils import config_to_ext, get_loader, POOL_KEY, META_KEY
 from .loaders import Loader
 
-LoaderType: TypeAlias = Union[str, Loader, None]
+LoaderType = Union[str, Loader, None]
 
 
 class Config:
