@@ -50,6 +50,14 @@ def test_env_loader(env_file):
     assert loaded == {}
 
 
+def test_env_loader_file_handler(env_file):
+    loader = get_loader("env")
+    with open(env_file) as f:
+        loaded = loader.load(f)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"default_a": 1, "b": 2}
+
+
 def test_ini_loader(ini_file_noprofile, ini_file, ini_file_nodefault):
     loader = get_loader("ini")
     loaded = loader.load(ini_file_noprofile)
@@ -101,6 +109,26 @@ def test_ini_loader(ini_file_noprofile, ini_file, ini_file_nodefault):
     assert loaded == {}
 
 
+def test_ini_loader_file_handler(ini_file_noprofile):
+    loader = get_loader("ini")
+    with open(ini_file_noprofile) as f:
+        loaded = loader.load(f)
+    assert isinstance(loaded, Diot)
+    assert loaded == {
+        "a": 10,
+        "b": "11",
+        "c": "x:y",
+        "d": 12,
+        "e": 13.1,
+        "f": True,
+        "g": "csv:a,b,c",
+        "h": None,
+        "i": 1e-3,
+        "j": "true",
+        "k": "k",
+    }
+
+
 def test_json_loader(json_file):
     loader = get_loader("json")
 
@@ -114,6 +142,14 @@ def test_json_loader(json_file):
 
     loaded = loader.load("json_file_not_exist", ignore_nonexist=True)
     assert loaded == {}
+
+
+def test_json_loader_file_handler(json_file):
+    loader = get_loader("json")
+    with open(json_file) as f:
+        loaded = loader.load(f)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"default": {"a": 1}, "b": 2}
 
 
 def test_toml_loader(toml_file):
@@ -131,6 +167,14 @@ def test_toml_loader(toml_file):
     assert loaded == {}
 
 
+def test_toml_loader_file_handler(toml_file):
+    loader = get_loader("toml")
+    with open(toml_file) as f:
+        loaded = loader.load(f)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"b": 2, "default": {"a": 1}}
+
+
 def test_yaml_loader(yaml_file):
     loader = get_loader("yaml")
 
@@ -144,6 +188,14 @@ def test_yaml_loader(yaml_file):
 
     loaded = loader.load("yaml_file_not_exist", ignore_nonexist=True)
     assert loaded == {}
+
+
+def test_yaml_loader_file_handler(yaml_file):
+    loader = get_loader("yaml")
+    with open(yaml_file) as f:
+        loaded = loader.load(f)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"default": {"a": 1}, "b": 2}
 
 
 def test_osenv_loader():

@@ -12,6 +12,10 @@ class YamlLoader(Loader):
 
     def loading(self, conf: Any, ignore_nonexist: bool) -> Diot:
         """Load the configuration from a yaml file"""
+        if hasattr(conf, "read"):
+            content = conf.read()
+            return Diot(yaml.load(content, Loader=yaml.FullLoader))
+
         if not self._exists(conf, ignore_nonexist):
             return Diot()
 

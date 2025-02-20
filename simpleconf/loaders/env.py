@@ -1,4 +1,5 @@
 import warnings
+import io
 from pathlib import Path
 from typing import Any
 from simpleconf.utils import require_package
@@ -36,8 +37,13 @@ class EnvLoader(Loader):
 
     def loading(self, conf: Any, ignore_nonexist: bool = False) -> Diot:
         """Load the configuration from a .env file"""
+        if hasattr(conf, "read"):
+            content = conf.read()
+            return Diot(dotenv.dotenv_values(stream=io.StringIO(content)))
+
         if not self._exists(conf, ignore_nonexist):
             return Diot()
+
         return Diot(dotenv.main.DotEnv(conf).dict())
 
     def load_with_profiles(  # type: ignore[override]

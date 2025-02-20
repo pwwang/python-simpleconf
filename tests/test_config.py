@@ -24,6 +24,44 @@ def test_nonprofile(ini_file, ini_file_rc, dict_obj):
     assert config.DEFAULT.a == 7
     assert config.TEST.a == 9
 
+    config = Config.load(ini_file_rc, loader="toml")
+    assert config.DEFAULT.a == 7
+    assert config.TEST.a == 9
+
+    config = ProfileConfig.load(ini_file_rc, loader="toml")
+    assert config.a == 7
+    assert config.b == 8
+
+
+def test_nonprofile_file_handler(ini_file_noprofile):
+    with open(ini_file_noprofile) as f:
+        config = Config.load(f, loader="ini")
+
+    assert config.a == 10
+    assert config.h is None
+
+
+def test_wrong_number_of_loaders(toml_file):
+    with pytest.raises(ValueError):
+        Config.load(toml_file, loader=["toml", "yaml"])
+
+    with pytest.raises(ValueError):
+        ProfileConfig.load(toml_file, loader=["toml", "yaml"])
+
+
+def test_no_loader_for_stream(toml_file):
+    with pytest.raises(ValueError):
+        with open(toml_file) as f:
+            Config.load(f)
+
+    with pytest.raises(ValueError):
+        with open(toml_file) as f:
+            ProfileConfig.load(f)
+
+    with pytest.raises(ValueError):
+        with open(toml_file) as f:
+            ProfileConfig.load_one(f)
+
 
 def test_profile(ini_file, ini_file_rc, ini_file_nodefault):
     config = ProfileConfig.load(ini_file, ini_file_nodefault)

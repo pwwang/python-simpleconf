@@ -1,38 +1,51 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, List, Generator
+from typing import Any, List, Generator, TypeAlias, Union, Sequence
 
 from diot import Diot
 
 from .utils import config_to_ext, get_loader, POOL_KEY, META_KEY
+from .loaders import Loader
 
-if TYPE_CHECKING:
-    from .loaders import Loader
+LoaderType: TypeAlias = Union[str, Loader, None]
 
 
 class Config:
     """The configuration class"""
 
     @staticmethod
-    def load(*configs, ignore_nonexist: bool = False) -> Diot:
+    def load(
+        *configs: Any,
+        loader: LoaderType | Sequence[LoaderType] = None,
+        ignore_nonexist: bool = False,
+    ) -> Diot:
         """Load the configuration from the files, or other configurations
 
         Args:
             *configs: The configuration files or other configurations to load
                 Latter ones will override the former ones for items with the
                 same keys recursively.
+            loader: The loader to use. If a list is given, it must have the
+                same length as configs.
             ignore_nonexist: Whether to ignore non-existent files
                 Otherwise, will raise errors
 
         Returns:
             A Diot object with the loaded configurations
         """
+        if not isinstance(loader, Sequence) or isinstance(loader, str):
+            loader = [loader] * len(configs)
+
+        if len(loader) != len(configs):
+            raise ValueError(
+                f"Length of loader ({len(loader)}) does not match "
+                f"length of configs ({len(configs)})"
+            )
+
         out = Diot()
-        for conf in configs:
-            ext = config_to_ext(conf)
-            loader = get_loader(ext)
-            loaded = loader.load(conf, ignore_nonexist)
+        for i, conf in enumerate(configs):
+            loaded = Config.load_one(conf, loader[i], ignore_nonexist)
             out.update_recursively(loaded)
 
         return out
@@ -55,6 +68,9 @@ class Config:
             A Diot object with the loaded configuration
         """
         if loader is None:
+            if hasattr(config, "read"):
+                raise ValueError("'loader' must be specified for stream")
+
             ext = config_to_ext(config)
             loader = get_loader(ext)
         else:
@@ -67,26 +83,50 @@ class ProfileConfig:
     """The configuration class with profile support"""
 
     @staticmethod
-    def load(*configs: Any, ignore_nonexist: bool = False) -> Diot:
+    def load(
+        *configs: Any,
+        loader: LoaderType | Sequence[LoaderType] = None,
+        ignore_nonexist: bool = False,
+    ) -> Diot:
         """Load the configuration from the files, or other configurations
 
         Args:
             *configs: The configuration files or other configurations to load
                 Latter ones will override the former ones for items with the
                 same profile and keys recursively.
+            loader: The loader to use. If a list is given, it must have the
+                same length as configs.
             ignore_nonexist: Whether to ignore non-existent files
                 Otherwise, will raise errors
         """
+        if not isinstance(loader, Sequence) or isinstance(loader, str):
+            loader = [loader] * len(configs)
+
+        if len(loader) != len(configs):
+            raise ValueError(
+                f"Length of loader ({len(loader)}) does not match "
+                f"length of configs ({len(configs)})"
+            )
+
         out = Diot({POOL_KEY: Diot()})
         pool = out[POOL_KEY]
         out[META_KEY] = {
             "current_profile": None,
             "base_profile": None,
         }
-        for conf in configs:
-            ext = config_to_ext(conf)
-            loader = get_loader(ext)
-            loaded = loader.load_with_profiles(conf, ignore_nonexist)
+        for i, conf in enumerate(configs):
+            lder = loader[i]
+
+            if lder is None and hasattr(conf, "read"):
+                raise ValueError("'loader' must be specified for stream")
+
+            if lder is None:
+                ext = config_to_ext(conf)
+                lder = get_loader(ext)
+            else:
+                lder = get_loader(lder)
+
+            loaded = lder.load_with_profiles(conf, ignore_nonexist)
             for profile, value in loaded.items():
                 profile = profile.lower()
                 pool.setdefault(profile, Diot())
@@ -121,6 +161,9 @@ class ProfileConfig:
         }
 
         if loader is None:
+            if hasattr(conf, "read"):
+                raise ValueError("'loader' must be specified for stream")
+
             ext = config_to_ext(conf)
             loader = get_loader(ext)
         else:
