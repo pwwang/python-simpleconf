@@ -20,6 +20,18 @@ def test_dict_loader():
     assert loaded == {"a": 1}
 
 
+def test_dicts_loader():
+    loader = get_loader("dicts")
+
+    loaded = loader.load('{"a": 1, "b": 2}')
+    assert isinstance(loaded, Diot)
+    assert loaded == {"a": 1, "b": 2}
+
+    loaded = loader.load_with_profiles('{"a": 1, "b": 2}')
+    assert isinstance(loaded, Diot)
+    assert loaded == {"a": 1, "b": 2}
+
+
 def test_direct_loader():
     loader = get_loader(DictLoader())
 
@@ -48,6 +60,13 @@ def test_env_loader(env_file):
 
     loaded = loader.load("env_file_not_exist", ignore_nonexist=True)
     assert loaded == {}
+
+
+def test_envs_loader(env_file):
+    loader = get_loader("envs")
+    loaded = loader.load(env_file.read_text())
+    assert isinstance(loaded, Diot)
+    assert loaded == {"default_a": 1, "b": 2}
 
 
 def test_env_loader_file_handler(env_file):
@@ -129,6 +148,25 @@ def test_ini_loader_file_handler(ini_file_noprofile):
     }
 
 
+def test_inis_loader(ini_file_noprofile):
+    loader = get_loader("inis")
+    loaded = loader.load(ini_file_noprofile.read_text())
+    assert isinstance(loaded, Diot)
+    assert loaded == {
+        "a": 10,
+        "b": "11",
+        "c": "x:y",
+        "d": 12,
+        "e": 13.1,
+        "f": True,
+        "g": "csv:a,b,c",
+        "h": None,
+        "i": 1e-3,
+        "j": "true",
+        "k": "k",
+    }
+
+
 def test_json_loader(json_file):
     loader = get_loader("json")
 
@@ -142,6 +180,13 @@ def test_json_loader(json_file):
 
     loaded = loader.load("json_file_not_exist", ignore_nonexist=True)
     assert loaded == {}
+
+
+def test_jsons_loader(json_file):
+    loader = get_loader("jsons")
+    loaded = loader.load(json_file.read_text())
+    assert isinstance(loaded, Diot)
+    assert loaded == {"default": {"a": 1}, "b": 2}
 
 
 def test_json_loader_file_handler(json_file):
@@ -175,6 +220,13 @@ def test_toml_loader_file_handler(toml_file):
     assert loaded == {"b": 2, "default": {"a": 1}}
 
 
+def test_tomls_loader(toml_file):
+    loader = get_loader("tomls")
+    loaded = loader.load(toml_file.read_text())
+    assert isinstance(loaded, Diot)
+    assert loaded == {"b": 2, "default": {"a": 1}}
+
+
 def test_yaml_loader(yaml_file):
     loader = get_loader("yaml")
 
@@ -194,6 +246,13 @@ def test_yaml_loader_file_handler(yaml_file):
     loader = get_loader("yaml")
     with open(yaml_file) as f:
         loaded = loader.load(f)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"default": {"a": 1}, "b": 2}
+
+
+def test_yamls_loader(yaml_file):
+    loader = get_loader("yamls")
+    loaded = loader.load(yaml_file.read_text())
     assert isinstance(loaded, Diot)
     assert loaded == {"default": {"a": 1}, "b": 2}
 

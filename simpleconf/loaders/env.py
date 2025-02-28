@@ -1,10 +1,10 @@
 import warnings
 import io
 from pathlib import Path
-from typing import Any
-from simpleconf.utils import require_package
+from typing import Any, Mapping
 from diot import Diot
 
+from ..utils import require_package
 from ..caster import (
     cast,
     int_caster,
@@ -35,16 +35,16 @@ class EnvLoader(Loader):
         toml_caster,
     ]
 
-    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Diot:
+    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Mapping[str, Any]:
         """Load the configuration from a .env file"""
         if hasattr(conf, "read"):
             content = conf.read()
-            return Diot(dotenv.dotenv_values(stream=io.StringIO(content)))
+            return dotenv.dotenv_values(stream=io.StringIO(content))
 
         if not self._exists(conf, ignore_nonexist):
-            return Diot()
+            return {}
 
-        return Diot(dotenv.main.DotEnv(conf).dict())
+        return dotenv.main.DotEnv(conf).dict()
 
     def load_with_profiles(  # type: ignore[override]
         self,
@@ -65,3 +65,11 @@ class EnvLoader(Loader):
             out.setdefault(profile, Diot())[key] = v
 
         return cast(out, self.__class__.CASTERS)
+
+
+class EnvsLoader(EnvLoader):
+    """Env string loader"""
+
+    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Mapping[str, Any]:
+        """Load the configuration from a .env file"""
+        return dotenv.dotenv_values(stream=io.StringIO(conf))

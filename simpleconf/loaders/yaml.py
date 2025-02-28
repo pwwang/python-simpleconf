@@ -1,8 +1,7 @@
-from typing import Any
-from simpleconf.utils import require_package
-from diot import Diot
+from typing import Any, Mapping
 
 from . import Loader
+from ..utils import require_package
 
 yaml = require_package("yaml")
 
@@ -10,14 +9,22 @@ yaml = require_package("yaml")
 class YamlLoader(Loader):
     """Yaml file loader"""
 
-    def loading(self, conf: Any, ignore_nonexist: bool) -> Diot:
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
         """Load the configuration from a yaml file"""
         if hasattr(conf, "read"):
             content = conf.read()
-            return Diot(yaml.load(content, Loader=yaml.FullLoader))
+            return yaml.load(content, Loader=yaml.FullLoader)
 
         if not self._exists(conf, ignore_nonexist):
-            return Diot()
+            return {}
 
         with open(conf) as f:
-            return Diot(yaml.load(f, Loader=yaml.FullLoader))
+            return yaml.load(f, Loader=yaml.FullLoader)
+
+
+class YamlsLoader(YamlLoader):
+    """Yaml string loader"""
+
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
+        """Load the configuration from a yaml file"""
+        return yaml.load(conf, Loader=yaml.FullLoader)

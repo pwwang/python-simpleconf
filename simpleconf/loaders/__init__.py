@@ -3,12 +3,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List
+from typing import TYPE_CHECKING, Any, Callable, List, Mapping\
 
+from diot import Diot
 from ..caster import cast
-
-if TYPE_CHECKING:
-    from diot import Diot
 
 
 class Loader(ABC):
@@ -16,7 +14,7 @@ class Loader(ABC):
     CASTERS: List[Callable[[str, bool], Any]] | None = None
 
     @abstractmethod
-    def loading(self, conf: Any, ignore_nonexist: bool) -> "Diot":
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
         """Load the configuration from the path or configurations"""
 
     def _exists(self, conf: PathLike, ignore_exist: bool) -> bool:
@@ -26,7 +24,7 @@ class Loader(ABC):
             raise FileNotFoundError(f"{conf} does not exist")
         return path.exists()
 
-    def load(self, conf: Any, ignore_nonexist: bool = False) -> "Diot":
+    def load(self, conf: Any, ignore_nonexist: bool = False) -> Diot:
         """Load the configuration from the path or configurations and cast
         values
 
@@ -38,7 +36,8 @@ class Loader(ABC):
         """
         loaded = self.loading(conf, ignore_nonexist)
         if self.__class__.CASTERS:
-            return cast(loaded, self.__class__.CASTERS)
-        return loaded
+            loaded = cast(loaded, self.__class__.CASTERS)
+
+        return Diot(loaded)
 
     load_with_profiles = load

@@ -38,32 +38,55 @@ def get_loader(ext: str | Loader) -> Loader:
 
     if ext == "dict":
         from .loaders.dict import DictLoader
-
         return DictLoader()
+
+    if ext == "dicts":
+        from .loaders.dict import DictsLoader
+        return DictsLoader()
+
     if ext == "env":
         from .loaders.env import EnvLoader
-
         return EnvLoader()
+
+    if ext == "envs":
+        from .loaders.env import EnvsLoader
+        return EnvsLoader()
+
     if ext == "ini":
         from .loaders.ini import IniLoader
-
         return IniLoader()
+
+    if ext == "inis":
+        from .loaders.ini import InisLoader
+        return InisLoader()
+
     if ext == "json":
         from .loaders.json import JsonLoader
-
         return JsonLoader()
+
+    if ext == "jsons":
+        from .loaders.json import JsonsLoader
+        return JsonsLoader()
+
     if ext == "osenv":
         from .loaders.osenv import OsenvLoader
-
         return OsenvLoader()
+
     if ext == "toml":
         from .loaders.toml import TomlLoader
-
         return TomlLoader()
+
+    if ext == "tomls":
+        from .loaders.toml import TomlsLoader
+        return TomlsLoader()
+
     if ext == "yaml":
         from .loaders.yaml import YamlLoader
-
         return YamlLoader()
+
+    if ext == "yamls":
+        from .loaders.yaml import YamlsLoader
+        return YamlsLoader()
 
     raise FormatNotSupported(f"{ext} is not supported.")
 

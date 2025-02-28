@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any
+from typing import Any, Mapping
 from pathlib import Path
-from simpleconf.utils import require_package
 from diot import Diot
 
+from ..utils import require_package
 from ..caster import (
     cast,
     int_caster,
@@ -36,14 +36,14 @@ class IniLoader(Loader):
         toml_caster,
     ]
 
-    def loading(self, conf: Any, ignore_nonexist: bool) -> Diot:
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
         """Load the configuration from an ini-like file"""
         if hasattr(conf, "read"):
             content = conf.read()
             return iniconfig.IniConfig("<config>", content).sections
 
         if not self._exists(conf, ignore_nonexist):
-            return Diot(default={})
+            return {"default": {}}
 
         return iniconfig.IniConfig(conf).sections
 
@@ -83,3 +83,11 @@ class IniLoader(Loader):
         for k, v in sections.items():
             out[k.lower()] = cast(v, self.__class__.CASTERS)
         return out
+
+
+class InisLoader(IniLoader):
+    """Ini-like string loader"""
+
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
+        """Load the configuration from an ini-like file"""
+        return iniconfig.IniConfig("<config>", conf).sections

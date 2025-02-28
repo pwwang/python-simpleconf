@@ -1,7 +1,6 @@
-from typing import Any
-from simpleconf.utils import require_package
-from diot import Diot
+from typing import Any, Mapping
 
+from ..utils import require_package
 from ..caster import (
     none_caster,
     null_caster,
@@ -19,18 +18,26 @@ class TomlLoader(Loader):
         null_caster,
     ]
 
-    def loading(self, conf: Any, ignore_nonexist: bool) -> Diot:
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
         """Load the configuration from a toml file"""
         if hasattr(conf, "read"):
             content = conf.read()
-            return Diot(toml.loads(content))
+            return toml.loads(content)
 
         if not self._exists(conf, ignore_nonexist):
-            return Diot()
+            return {}
 
         if toml.__name__ in ("tomli", "tomllib"):  # pragma: no cover
             with open(conf, "rb") as f:
-                return Diot(toml.load(f))
+                return toml.load(f)
 
         with open(conf, "r") as f:  # rtoml
-            return Diot(toml.load(f))
+            return toml.load(f)
+
+
+class TomlsLoader(TomlLoader):
+    """Toml string loader"""
+
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
+        """Load the configuration from a toml file"""
+        return toml.loads(conf)
