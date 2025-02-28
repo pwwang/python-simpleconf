@@ -69,6 +69,8 @@ conf = Config.load({'a': 1, 'b': {'c': 2}})
 - `XXX.osenv`: System environment variables with prefix `XXX_` (case-sensitive) is used.
   - `XXX_A=1` will be loaded as `conf.A = 1`.
 - python dictionary.
+- Strings format of the above formats are also supported.
+  - `"{'a': 1}"` will be loaded as `conf.a = 1`.
 
 ### Profile support
 
