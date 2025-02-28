@@ -1,5 +1,5 @@
 from os import environ
-from typing import Any, Mapping
+from typing import Any, Dict
 import warnings
 
 from diot import Diot
@@ -32,7 +32,7 @@ class OsenvLoader(Loader):
         toml_caster,
     ]
 
-    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Mapping[str, Any]:
+    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Dict[str, Any]:
         """Load the configuration from environment variables"""
         prefix = f"{conf[:-6]}_" if len(conf) > 6 else ""
         len_prefix = len(prefix)

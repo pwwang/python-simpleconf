@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Callable, Sequence, TYPE_CHECKING
+from typing import Any, Callable, Dict, Sequence, TypeVar
 from ast import literal_eval
 
 
-if TYPE_CHECKING:
-    from diot import Diot
+T = TypeVar("T", bound=Dict[str, Any])
 
 
 def type_caster(prefix: str, cast_fun: Callable) -> Any:
@@ -77,7 +76,7 @@ def cast_value(value: Any, casters: Sequence[Callable]) -> Any:
     return value
 
 
-def cast(conf: Diot, casters: Sequence[Callable]) -> Diot:
+def cast(conf: T, casters: Sequence[Callable]) -> T:
     """Cast the configuration"""
     for key, value in conf.items():
         if isinstance(value, dict):

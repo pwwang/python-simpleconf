@@ -1,7 +1,7 @@
 import warnings
 import io
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Dict
 from diot import Diot
 
 from ..utils import require_package
@@ -35,7 +35,7 @@ class EnvLoader(Loader):
         toml_caster,
     ]
 
-    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Mapping[str, Any]:
+    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Dict[str, Any]:
         """Load the configuration from a .env file"""
         if hasattr(conf, "read"):
             content = conf.read()
@@ -70,6 +70,6 @@ class EnvLoader(Loader):
 class EnvsLoader(EnvLoader):
     """Env string loader"""
 
-    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Mapping[str, Any]:
+    def loading(self, conf: Any, ignore_nonexist: bool = False) -> Dict[str, Any]:
         """Load the configuration from a .env file"""
         return dotenv.dotenv_values(stream=io.StringIO(conf))

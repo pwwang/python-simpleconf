@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Mapping\
+from typing import Any, Callable, List, Dict
 
 from diot import Diot
 from ..caster import cast
@@ -14,7 +14,7 @@ class Loader(ABC):
     CASTERS: List[Callable[[str, bool], Any]] | None = None
 
     @abstractmethod
-    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Load the configuration from the path or configurations"""
 
     def _exists(self, conf: PathLike, ignore_exist: bool) -> bool:

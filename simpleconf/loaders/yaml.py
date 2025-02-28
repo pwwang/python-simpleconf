@@ -1,4 +1,4 @@
-from typing import Any, Mapping
+from typing import Any, Dict
 
 from . import Loader
 from ..utils import require_package
@@ -9,7 +9,7 @@ yaml = require_package("yaml")
 class YamlLoader(Loader):
     """Yaml file loader"""
 
-    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Load the configuration from a yaml file"""
         if hasattr(conf, "read"):
             content = conf.read()
@@ -25,6 +25,6 @@ class YamlLoader(Loader):
 class YamlsLoader(YamlLoader):
     """Yaml string loader"""
 
-    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Load the configuration from a yaml file"""
         return yaml.load(conf, Loader=yaml.FullLoader)

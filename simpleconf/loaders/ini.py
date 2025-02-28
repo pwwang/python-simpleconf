@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any, Mapping
+from typing import Any, Dict
 from pathlib import Path
 from diot import Diot
 
@@ -36,7 +36,7 @@ class IniLoader(Loader):
         toml_caster,
     ]
 
-    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Load the configuration from an ini-like file"""
         if hasattr(conf, "read"):
             content = conf.read()
@@ -88,6 +88,6 @@ class IniLoader(Loader):
 class InisLoader(IniLoader):
     """Ini-like string loader"""
 
-    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Load the configuration from an ini-like file"""
         return iniconfig.IniConfig("<config>", conf).sections

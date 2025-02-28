@@ -1,4 +1,4 @@
-from typing import Any, Mapping
+from typing import Any, Dict
 
 from ..utils import require_package
 from ..caster import (
@@ -18,7 +18,7 @@ class TomlLoader(Loader):
         null_caster,
     ]
 
-    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Load the configuration from a toml file"""
         if hasattr(conf, "read"):
             content = conf.read()
@@ -38,6 +38,6 @@ class TomlLoader(Loader):
 class TomlsLoader(TomlLoader):
     """Toml string loader"""
 
-    def loading(self, conf: Any, ignore_nonexist: bool) -> Mapping[str, Any]:
+    def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Load the configuration from a toml file"""
         return toml.loads(conf)
