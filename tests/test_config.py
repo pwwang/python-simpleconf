@@ -49,6 +49,37 @@ def test_wrong_number_of_loaders(toml_file):
         ProfileConfig.load(toml_file, loader=["toml", "yaml"])
 
 
+def test_nonexistent_base_profile(ini_file, ini_file_nodefault):
+    with pytest.raises(ValueError):
+        ProfileConfig.load(ini_file, base="nonexist")
+
+    # but it is okay when allow_missing_base is True
+    config = ProfileConfig.load(ini_file, base="nonexist", allow_missing_base=True)
+    config = ProfileConfig.use_profile(config, "default")
+    assert config.a == 1
+    assert config.b == 2
+
+    with pytest.raises(ValueError):
+        ProfileConfig.load(ini_file_nodefault, base="nonexist")
+
+    # but it is okay when allow_missing_base is True
+    config = ProfileConfig.load(
+        ini_file_nodefault, base="nonexist", allow_missing_base=True
+    )
+    assert "a" not in config
+    assert "b" not in config
+
+    with pytest.raises(ValueError):
+        ProfileConfig.load_one(ini_file_nodefault, base="nonexist")
+
+    # but it is okay when allow_missing_base is True
+    config = ProfileConfig.load_one(
+        ini_file_nodefault, base="nonexist", allow_missing_base=True
+    )
+    ProfileConfig.use_profile(config, "test", base=None)
+    assert config.a == 6
+
+
 def test_no_loader_for_stream(toml_file):
     with pytest.raises(ValueError):
         with open(toml_file) as f:
@@ -128,10 +159,20 @@ def test_use_profile_base_none():
     assert config.b == 2
 
 
-def test_detach():
+def test_use_profile_base_not_existing():
     config = ProfileConfig.load(
-        {"default": {"a": 1, "b": [2, 3]}, "p1": {"a": 6}}
+        {"default": {"a": 1, "b": 2}, "p1": {"a": 6}, "p2": {"a": 7}}
     )
+    ProfileConfig.use_profile(config, "p1", "x", allow_missing_base=True)
+    assert config.a == 6
+    assert "b" not in config
+
+    with pytest.raises(ValueError):
+        ProfileConfig.use_profile(config, "p2", "x", allow_missing_base=False)
+
+
+def test_detach():
+    config = ProfileConfig.load({"default": {"a": 1, "b": [2, 3]}, "p1": {"a": 6}})
     ProfileConfig.use_profile(config, "p1")
     diot = ProfileConfig.detach(config)
     assert diot.a == 6

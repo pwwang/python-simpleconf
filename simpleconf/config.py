@@ -87,6 +87,8 @@ class ProfileConfig:
         *configs: Any,
         loader: LoaderType | Sequence[LoaderType] = None,
         ignore_nonexist: bool = False,
+        base: str = "default",
+        allow_missing_base: bool = False,
     ) -> Diot:
         """Load the configuration from the files, or other configurations
 
@@ -98,6 +100,10 @@ class ProfileConfig:
                 same length as configs.
             ignore_nonexist: Whether to ignore non-existent files
                 Otherwise, will raise errors
+            base: The default profile to use after loading
+            allow_missing_base: Whether to allow missing base profile
+                If False, will raise errors when the base profile is not found
+                in the loaded profiles.
         """
         if not isinstance(loader, Sequence) or isinstance(loader, str):
             loader = [loader] * len(configs)
@@ -132,7 +138,12 @@ class ProfileConfig:
                 pool.setdefault(profile, Diot())
                 pool[profile].update_recursively(value)
 
-        ProfileConfig.use_profile(out, "default")
+        if base and base not in pool and not allow_missing_base:
+            raise ValueError(f"Base profile '{base}' not found")
+
+        if base and base in pool:
+            ProfileConfig.use_profile(out, base, base=base)
+
         return out
 
     @staticmethod
@@ -140,6 +151,8 @@ class ProfileConfig:
         conf: Any,
         loader: str | Loader | None = None,
         ignore_nonexist: bool = False,
+        base: str = "default",
+        allow_missing_base: bool = False,
     ) -> Diot:
         """Load the configuration from the file
 
@@ -148,6 +161,7 @@ class ProfileConfig:
             loader: The loader to use. Will detect from conf by default
             ignore_nonexist: Whether to ignore non-existent files
                 Otherwise, will raise errors
+            base: The default profile to use after loading
 
         Returns:
             A Diot object with the loaded configuration
@@ -175,7 +189,12 @@ class ProfileConfig:
             pool.setdefault(profile, Diot())
             pool[profile].update_recursively(value)
 
-        ProfileConfig.use_profile(out, "default")
+        if base and base not in pool and not allow_missing_base:
+            raise ValueError(f"Base profile '{base}' not found")
+
+        if base and base in pool:
+            ProfileConfig.use_profile(out, base, base=base)
+
         return out
 
     @staticmethod
@@ -184,24 +203,35 @@ class ProfileConfig:
         profile: str,
         base: str = "default",
         copy: bool = False,
+        allow_missing_base: bool = False,
     ) -> Diot:
         """Switch the configuration to the given profile, based on the
-        default profile.
+        base profile.
 
         Args:
             conf: The configuration object by the `load` function
             profile: The profile to use
-            default: The default profile
+            base: The base profile.
+                If it does not exist, no base profile will be used.
+            copy: Whether to return a new configuration object
+                If False, the given configuration object will be updated
+                in-place.
+            allow_missing_base: Whether to allow missing base profile
+                If False, will raise errors when the base profile is not found
+                in the loaded profiles.
 
         Returns:
             The configuration object with the switched profile if copy is True
             Otherwise None (updated in-place)
         """
         pool = conf[POOL_KEY]
+        if base and base not in pool and not allow_missing_base:
+            raise ValueError(f"Base profile '{base}' not found")
+
         if copy:
             out = Diot({POOL_KEY: pool, META_KEY: conf[META_KEY].copy()})
-            if base is not None:
-                out.update_recursively(pool[base])
+            if base is not None and base != profile:
+                out.update_recursively(pool.get(base, {}))
             out[META_KEY]["current_profile"] = profile
             out[META_KEY]["base_profile"] = base
             out.update_recursively(pool[profile])
@@ -213,8 +243,8 @@ class ProfileConfig:
                 continue
             del conf[key]
 
-        if base is not None:
-            conf.update_recursively(pool[base])
+        if base is not None and base != profile:
+            conf.update_recursively(pool.get(base, {}))
         conf.update_recursively(pool[profile])
         conf[META_KEY]["current_profile"] = profile
         conf[META_KEY]["base_profile"] = base

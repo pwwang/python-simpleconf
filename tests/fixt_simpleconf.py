@@ -1,11 +1,15 @@
 import pytest
-from pathlib import Path
 
 
-@pytest.fixture
-def ini_file(tmpdir):
-    tmpdir = Path(str(tmpdir))
-    ret = tmpdir / 'default.ini'
+@pytest.fixture(scope="module")
+def config_path(tmp_path_factory):
+    # one tmp path for this module
+    return tmp_path_factory.mktemp("configs")
+
+
+@pytest.fixture(scope="module")
+def ini_file(config_path):
+    ret = config_path / 'default.ini'
     ret.write_text("""[default]
 a = @int:1
 b = @int:2
@@ -16,20 +20,18 @@ a = @int:3
     return ret
 
 
-@pytest.fixture
-def ini_file_nodefault(tmpdir):
-    tmpdir = Path(str(tmpdir))
-    ret = tmpdir / 'default_upper.ini'
+@pytest.fixture(scope="module")
+def ini_file_nodefault(config_path):
+    ret = config_path / 'default_upper.ini'
     ret.write_text("""[TEST]
 a = @int:6
 """)
     return ret
 
 
-@pytest.fixture
-def ini_file_rc(tmpdir):
-    tmpdir = Path(str(tmpdir))
-    ret = tmpdir / '.pylintrc'
+@pytest.fixture(scope="module")
+def ini_file_rc(config_path):
+    ret = config_path / '.pylintrc'
     ret.write_text("""[DEFAULT]
 a = 7
 b = 8
@@ -40,10 +42,9 @@ a = 9
     return ret
 
 
-@pytest.fixture
-def ini_file_noprofile(tmpdir):
-    tmpdir = Path(str(tmpdir))
-    ret = tmpdir / 'noprofile.ini'
+@pytest.fixture(scope="module")
+def ini_file_noprofile(config_path):
+    ret = config_path / 'noprofile.ini'
     ret.write_text("""[DEFAULT]
 a = @py:10
 b = 11
@@ -60,10 +61,9 @@ k = k
     return ret
 
 
-@pytest.fixture
-def env_file(tmpdir):
-    tmpdir = Path(str(tmpdir))
-    ret = tmpdir / 'env.env'
+@pytest.fixture(scope="module")
+def env_file(config_path):
+    ret = config_path / 'env.env'
     ret.write_text("""
 default_a=@int:1
 b=@int:2
@@ -71,10 +71,9 @@ b=@int:2
     return ret
 
 
-@pytest.fixture
-def yaml_file(tmpdir):
-    tmpdir = Path(str(tmpdir))
-    ret = tmpdir / 'simpleconf.yaml'
+@pytest.fixture(scope="module")
+def yaml_file(config_path):
+    ret = config_path / 'simpleconf.yaml'
     ret.write_text("""default:
   a: 1
 b: 2
@@ -82,19 +81,17 @@ b: 2
     return ret
 
 
-@pytest.fixture
-def json_file(tmpdir):
-    tmpdir = Path(str(tmpdir))
-    ret = tmpdir / 'simpleconf.json'
+@pytest.fixture(scope="module")
+def json_file(config_path):
+    ret = config_path / 'simpleconf.json'
     ret.write_text("""{"default": {"a": 1}, "b": 2}
 """)
     return ret
 
 
-@pytest.fixture
-def toml_file(tmpdir):
-    tmpdir = Path(str(tmpdir))
-    ret = tmpdir / 'simpleconf.toml'
+@pytest.fixture(scope="module")
+def toml_file(config_path):
+    ret = config_path / 'simpleconf.toml'
     ret.write_text("""b = 2
 [default]
 a = 1
@@ -102,6 +99,6 @@ a = 1
     return ret
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def dict_obj():
     return {"default": {"a": 1}, "b": 2}
