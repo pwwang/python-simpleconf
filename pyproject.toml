@@ -24,6 +24,7 @@ pyyaml = { version="^6", optional = true}
 rtoml = {version = "^0.12", optional = true, platform = "linux"}
 tomli = {version = "^2.0", optional = true, markers = 'sys_platform != "linux"'}
 iniconfig = {version = "^2.0", optional = true}
+yunpath = {version = "^0.0.4", optional = true}
 
 [tool.poetry.extras]
 ini = [ "iniconfig" ]
@@ -31,6 +32,7 @@ env = [ "python-dotenv"]
 yaml = [ "pyyaml"]
 toml = [ "rtoml", "tomli"]
 all = [ "iniconfig", "python-dotenv", "pyyaml", "rtoml", "tomli"]
+cloud = [ "yunpath"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"

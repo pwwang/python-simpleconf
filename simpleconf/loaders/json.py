@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict
 
-from . import Loader
+from . import Loader, NoConvertingPathMixin
 
 
 class JsonLoader(Loader):
@@ -20,7 +20,7 @@ class JsonLoader(Loader):
             return json.load(f)
 
 
-class JsonsLoader(JsonLoader):
+class JsonsLoader(NoConvertingPathMixin, JsonLoader):
     """Json string loader"""
 
     def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:

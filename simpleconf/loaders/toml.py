@@ -5,7 +5,7 @@ from ..caster import (
     none_caster,
     null_caster,
 )
-from . import Loader
+from . import Loader, NoConvertingPathMixin
 
 toml = require_package("rtoml", "tomllib", "tomli")
 
@@ -35,7 +35,7 @@ class TomlLoader(Loader):
             return toml.load(f)
 
 
-class TomlsLoader(TomlLoader):
+class TomlsLoader(NoConvertingPathMixin, TomlLoader):
     """Toml string loader"""
 
     def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:

@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from . import Loader
+from . import Loader, NoConvertingPathMixin
 from ..utils import require_package
 
 yaml = require_package("yaml")
@@ -22,7 +22,7 @@ class YamlLoader(Loader):
             return yaml.load(f, Loader=yaml.FullLoader)
 
 
-class YamlsLoader(YamlLoader):
+class YamlsLoader(NoConvertingPathMixin, YamlLoader):
     """Yaml string loader"""
 
     def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:

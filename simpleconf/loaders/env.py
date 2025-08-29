@@ -16,7 +16,7 @@ from ..caster import (
     json_caster,
     toml_caster,
 )
-from . import Loader
+from . import Loader, NoConvertingPathMixin
 
 dotenv = require_package("dotenv")
 
@@ -67,7 +67,7 @@ class EnvLoader(Loader):
         return cast(out, self.__class__.CASTERS)
 
 
-class EnvsLoader(EnvLoader):
+class EnvsLoader(NoConvertingPathMixin, EnvLoader):
     """Env string loader"""
 
     def loading(self, conf: Any, ignore_nonexist: bool = False) -> Dict[str, Any]:

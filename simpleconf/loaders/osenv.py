@@ -4,7 +4,7 @@ import warnings
 
 from diot import Diot
 
-from . import Loader
+from . import Loader, NoConvertingPathMixin
 from ..caster import (
     cast,
     int_caster,
@@ -18,7 +18,7 @@ from ..caster import (
 )
 
 
-class OsenvLoader(Loader):
+class OsenvLoader(NoConvertingPathMixin, Loader):
     """Environment variable loader"""
 
     CASTERS = [

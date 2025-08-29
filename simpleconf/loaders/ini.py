@@ -17,7 +17,7 @@ from ..caster import (
     json_caster,
     toml_caster,
 )
-from . import Loader
+from . import Loader, NoConvertingPathMixin
 
 iniconfig = require_package("iniconfig")
 
@@ -85,7 +85,7 @@ class IniLoader(Loader):
         return out
 
 
-class InisLoader(IniLoader):
+class InisLoader(NoConvertingPathMixin, IniLoader):
     """Ini-like string loader"""
 
     def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
