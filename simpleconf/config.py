@@ -142,7 +142,7 @@ class ProfileConfig:
             raise ValueError(f"Base profile '{base}' not found")
 
         if base and base in pool:
-            ProfileConfig.use_profile(out, base, base=base)
+            out = ProfileConfig.use_profile(out, base, base=base)
 
         return out
 
@@ -193,7 +193,7 @@ class ProfileConfig:
             raise ValueError(f"Base profile '{base}' not found")
 
         if base and base in pool:
-            ProfileConfig.use_profile(out, base, base=base)
+            out = ProfileConfig.use_profile(out, base, base=base)
 
         return out
 
