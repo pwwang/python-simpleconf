@@ -26,8 +26,7 @@ jobs:
           python -m pip install flake8
           python -m pip install poetry
           poetry config virtualenvs.create false
-          poetry install -v
-          poetry install -E all
+          poetry install -v --all-extras
       - name: Run flake8
         run: flake8 simpleconf
       - name: Test with pytest
@@ -65,8 +64,7 @@ jobs:
           python -m pip install flake8
           python -m pip install poetry
           poetry config virtualenvs.create false
-          poetry install -v
-          poetry install -E all
+          poetry install -v --all-extras
       - name: Run flake8
         run: flake8 simpleconf
       - name: Test with pytest
