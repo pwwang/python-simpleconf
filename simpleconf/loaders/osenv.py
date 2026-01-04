@@ -1,6 +1,6 @@
+import warnings
 from os import environ
 from typing import Any, Dict
-import warnings
 
 from diot import Diot
 
@@ -42,23 +42,27 @@ class OsenvLoader(NoConvertingPathMixin, Loader):
                 out[k[len_prefix:]] = v
         return out
 
-    def load_with_profiles(  # type: ignore[override]
+    async def a_loading(
         self,
         conf: Any,
         ignore_nonexist: bool = False,
+    ) -> Dict[str, Any]:
+        """Asynchronously load the configuration from environment variables"""
+        return self.loading(conf, ignore_nonexist)
+
+    @classmethod
+    def _convert_with_profiles(  # type: ignore[override]
+        cls,
+        conf: Any,
+        loaded: Dict[str, Any],
     ) -> Diot:
-        prefix = f"{conf[:-6]}_" if len(conf) > 6 else ""
-        len_prefix = len(prefix)
         out = Diot()
-        for k, v in environ.items():
-            if not k.startswith(prefix):
-                continue
-            key = k[len_prefix:]
+        for key, val in loaded.items():
             if "_" not in key:
-                warnings.warn(f"{conf}: No profile name found in key: {k}")
+                warnings.warn(f"{conf}: No profile name found in key: {key}")
                 continue
             profile, key = key.split("_", 1)
             profile = profile.lower()
-            out.setdefault(profile, Diot())[key] = v
+            out.setdefault(profile, Diot())[key] = val
 
-        return cast(out, self.__class__.CASTERS)
+        return cast(out, cls.CASTERS)

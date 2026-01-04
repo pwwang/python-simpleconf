@@ -14,6 +14,10 @@ class DictLoader(Loader):
         """Load the configuration from a dict"""
         return conf
 
+    async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
+        """Asynchronously load the configuration from a dict"""
+        return conf
+
 
 class DictsLoader(NoConvertingPathMixin, DictLoader):
     """Dict string loader"""

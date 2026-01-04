@@ -1,7 +1,7 @@
 import warnings
 import io
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Awaitable, Dict
 from diot import Diot
 
 from ..utils import require_package
@@ -46,25 +46,37 @@ class EnvLoader(Loader):
 
         return dotenv.main.DotEnv(conf).dict()
 
-    def load_with_profiles(  # type: ignore[override]
-        self,
+    async def a_loading(self, conf, ignore_nonexist):
+        """Asynchronously load the configuration from a .env file"""
+        if hasattr(conf, "read"):
+            content = conf.read()
+            if isinstance(content, Awaitable):
+                content = await content
+            if isinstance(content, bytes):
+                content = content.decode()
+            return dotenv.dotenv_values(stream=io.StringIO(content))
+
+        if not await self._a_exists(conf, ignore_nonexist):
+            return {}
+
+        return dotenv.main.DotEnv(conf).dict()
+
+    @classmethod
+    def _convert_with_profiles(  # type: ignore[override]
+        cls,
         conf: Any,
-        ignore_nonexist: bool = False,
+        loaded: Dict[str, Any],
     ) -> Diot:
-        """Load and cast the configuration from a .env file with profiles"""
-        envs = self.loading(conf, ignore_nonexist)
         out = Diot()
-        for k, v in envs.items():
+        for k, v in loaded.items():
             if "_" not in k:
-                warnings.warn(
-                    f"{Path(conf).name}: No profile name found in key: {k}"
-                )
+                warnings.warn(f"{Path(conf).name}: No profile name found in key: {k}")
                 continue
             profile, key = k.split("_", 1)
             profile = profile.lower()
             out.setdefault(profile, Diot())[key] = v
 
-        return cast(out, self.__class__.CASTERS)
+        return cast(out, cls.CASTERS)
 
 
 class EnvsLoader(NoConvertingPathMixin, EnvLoader):

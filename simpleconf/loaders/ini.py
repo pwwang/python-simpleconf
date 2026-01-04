@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any, Dict
+from typing import Any, Awaitable, Dict
 from pathlib import Path
 from diot import Diot
 
@@ -47,10 +47,28 @@ class IniLoader(Loader):
 
         return iniconfig.IniConfig(conf).sections
 
-    def load(self, conf: Any, ignore_nonexist: bool = False) -> Diot:
-        """Load and cast the configuration from an ini-like file"""
-        sections = self.loading(conf, ignore_nonexist)
-        keys = list(sections)
+    async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
+        """Asynchronously load the configuration from an ini-like file"""
+        if hasattr(conf, "read"):
+            content = conf.read()
+            if isinstance(content, Awaitable):
+                content = await content
+            if isinstance(content, bytes):
+                content = content.decode()
+            return iniconfig.IniConfig("<config>", content).sections
+
+        if not await self._a_exists(conf, ignore_nonexist):
+            return {"default": {}}
+
+        return iniconfig.IniConfig(conf).sections
+
+    @classmethod
+    def _convert(  # type: ignore[override]
+        cls,
+        conf: Any,
+        loaded: Dict[str, Any],
+    ) -> Diot:
+        keys = list(loaded)
 
         if hasattr(conf, "read"):
             pathname = "<config>"
@@ -66,22 +84,19 @@ class IniLoader(Loader):
             )
 
         if len(keys) == 0 or keys[0].lower() != "default":
-            raise ValueError(
-                f"{pathname}: Only the default section can be loaded."
-            )
+            raise ValueError(f"{pathname}: Only the default section can be loaded.")
 
-        return cast(Diot(sections[keys[0]]), self.__class__.CASTERS)
+        return cast(Diot(loaded[keys[0]]), cls.CASTERS)
 
-    def load_with_profiles(  # type: ignore[override]
-        self,
+    @classmethod
+    def _convert_with_profiles(  # type: ignore[override]
+        cls,
         conf: Any,
-        ignore_nonexist: bool = False,
+        loaded: Dict[str, Any],
     ) -> Diot:
-        """Load and cast the configuration from an ini-like file with profiles"""
-        sections = self.loading(conf, ignore_nonexist)
         out = Diot()
-        for k, v in sections.items():
-            out[k.lower()] = cast(v, self.__class__.CASTERS)
+        for k, v in loaded.items():
+            out[k.lower()] = cast(v, cls.CASTERS)
         return out
 
 

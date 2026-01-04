@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Awaitable
 
 from ..utils import require_package
 from ..caster import (
@@ -33,6 +33,28 @@ class TomlLoader(Loader):
 
         with open(conf, "r") as f:  # rtoml
             return toml.load(f)
+
+    async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
+        """Asynchronously load the configuration from a toml file"""
+        if hasattr(conf, "read"):
+            content = conf.read()
+            if isinstance(content, Awaitable):
+                content = await content
+            if isinstance(content, bytes):
+                content = content.decode()
+            return toml.loads(content)
+
+        if not await self._a_exists(conf, ignore_nonexist):
+            return {}
+
+        async with self.__class__._convert_path(conf).a_open("rb") as f:
+            content = await f.read()
+            if toml.__name__ in ("tomli", "tomllib"):  # pragma: no cover
+                return toml.loads(content)
+            else:  # rtoml
+                if isinstance(content, bytes):  # pragma: no cover
+                    content = content.decode()
+                return toml.loads(content)
 
 
 class TomlsLoader(NoConvertingPathMixin, TomlLoader):

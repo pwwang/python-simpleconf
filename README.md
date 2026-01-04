@@ -28,24 +28,34 @@ pip install python-simpleconf[all]
 - Type casting
 - Profile support
 - Simple APIs
+- Async loading support
 
 ## Usage
 
 ### Loading configurations
 
 ```python
+import asyncio
 from simpleconf import Config
 
-# Load a single file
-conf = Config.load('~/xxx.ini')
-# load multiple files, later files override previous ones
-conf = Config.load(
-   '~/xxx.ini', '~/xxx.env', '~/xxx.yaml', '~/xxx.toml',
-   '~/xxx.json', 'simpleconf.osenv', {'a': 3}
-)
 
-# Load a single file with a different loader
-conf = Config.load('~/xxx.ini', loader="toml")
+async def main():
+  # Load a single file
+  conf = Config.load('~/xxx.ini')
+  # load multiple files, later files override previous ones
+  conf = Config.load(
+    '~/xxx.ini', '~/xxx.env', '~/xxx.yaml', '~/xxx.toml',
+    '~/xxx.json', 'simpleconf.osenv', {'a': 3}
+  )
+
+  # Load a single file with a different loader
+  conf = Config.load('~/xxx.ini', loader="toml")
+
+  # Async loading
+  conf = await Config.a_load('~/xxx.ini')
+
+if __name__ == "__main__":
+  asyncio.run(main())
 ```
 
 ### Accessing configuration values
@@ -82,6 +92,10 @@ conf = Config.load({'a': 1, 'b': {'c': 2}})
 from simpleconf import ProfileConfig
 
 conf = ProfileConfig.load({'default': {'a': 1})
+# conf.a == 1
+
+# Asynchronous loading
+# conf = await ProfileConfig.a_load({'default': {'a': 1})
 # conf.a == 1
 ```
 

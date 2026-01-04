@@ -14,8 +14,9 @@ LoaderType = Union[str, Loader, None]
 class Config:
     """The configuration class"""
 
-    @staticmethod
+    @classmethod
     def load(
+        cls,
         *configs: Any,
         loader: LoaderType | Sequence[LoaderType] = None,
         ignore_nonexist: bool = False,
@@ -50,8 +51,51 @@ class Config:
 
         return out
 
-    @staticmethod
+    @classmethod
+    async def a_load(
+        cls,
+        *configs: Any,
+        loader: LoaderType | Sequence[LoaderType] = None,
+        ignore_nonexist: bool = False,
+    ) -> Diot:
+        """Asynchronously load the configuration from the files, or other
+        configurations
+
+        Args:
+            *configs: The configuration files or other configurations to load
+                Latter ones will override the former ones for items with the
+                same keys recursively.
+            loader: The loader to use. If a list is given, it must have the
+                same length as configs.
+            ignore_nonexist: Whether to ignore non-existent files
+                Otherwise, will raise errors
+
+        Returns:
+            A Diot object with the loaded configurations
+        """
+        if not isinstance(loader, Sequence) or isinstance(loader, str):
+            loader = [loader] * len(configs)
+
+        if len(loader) != len(configs):
+            raise ValueError(
+                f"Length of loader ({len(loader)}) does not match "
+                f"length of configs ({len(configs)})"
+            )
+
+        out = Diot()
+        for i, conf in enumerate(configs):
+            loaded = await cls.a_load_one(
+                conf,
+                loader[i],
+                ignore_nonexist,
+            )
+            out.update_recursively(loaded)
+
+        return out
+
+    @classmethod
     def load_one(
+        cls,
         config,
         loader: str | Loader | None = None,
         ignore_nonexist: bool = False,
@@ -78,12 +122,42 @@ class Config:
 
         return loader.load(config, ignore_nonexist)
 
+    @classmethod
+    async def a_load_one(
+        cls,
+        config,
+        loader: str | Loader | None = None,
+        ignore_nonexist: bool = False,
+    ) -> Diot:
+        """Asynchronously load the configuration from the file
+
+        Args:
+            config: The configuration file to load
+            loader: The loader to use
+            ignore_nonexist: Whether to ignore non-existent files
+                Otherwise, will raise errors
+
+        Returns:
+            A Diot object with the loaded configuration
+        """
+        if loader is None:
+            if hasattr(config, "read"):
+                raise ValueError("'loader' must be specified for stream")
+
+            ext = config_to_ext(config)
+            loader = get_loader(ext)
+        else:
+            loader = get_loader(loader)
+
+        return await loader.a_load(config, ignore_nonexist)
+
 
 class ProfileConfig:
     """The configuration class with profile support"""
 
-    @staticmethod
+    @classmethod
     def load(
+        cls,
         *configs: Any,
         loader: LoaderType | Sequence[LoaderType] = None,
         ignore_nonexist: bool = False,
@@ -146,8 +220,78 @@ class ProfileConfig:
 
         return out
 
-    @staticmethod
+    @classmethod
+    async def a_load(
+        cls,
+        *configs: Any,
+        loader: LoaderType | Sequence[LoaderType] = None,
+        ignore_nonexist: bool = False,
+        base: str = "default",
+        allow_missing_base: bool = False,
+    ) -> Diot:
+        """Asynchronously load the configuration from the files, or other
+        configurations
+
+        Args:
+            *configs: The configuration files or other configurations to load
+                Latter ones will override the former ones for items with the
+                same profile and keys recursively.
+            loader: The loader to use. If a list is given, it must have the
+                same length as configs.
+            ignore_nonexist: Whether to ignore non-existent files
+                Otherwise, will raise errors
+            base: The default profile to use after loading
+            allow_missing_base: Whether to allow missing base profile
+                If False, will raise errors when the base profile is not found
+                in the loaded profiles.
+
+        Returns:
+            A Diot object with the loaded configurations
+        """
+        if not isinstance(loader, Sequence) or isinstance(loader, str):
+            loader = [loader] * len(configs)
+
+        if len(loader) != len(configs):
+            raise ValueError(
+                f"Length of loader ({len(loader)}) does not match "
+                f"length of configs ({len(configs)})"
+            )
+
+        out = Diot({POOL_KEY: Diot()})
+        pool = out[POOL_KEY]
+        out[META_KEY] = {
+            "current_profile": None,
+            "base_profile": None,
+        }
+        for i, conf in enumerate(configs):
+            lder = loader[i]
+
+            if lder is None and hasattr(conf, "read"):
+                raise ValueError("'loader' must be specified for stream")
+
+            if lder is None:
+                ext = config_to_ext(conf)
+                lder = get_loader(ext)
+            else:
+                lder = get_loader(lder)
+
+            loaded = await lder.a_load_with_profiles(conf, ignore_nonexist)
+            for profile, value in loaded.items():
+                profile = profile.lower()
+                pool.setdefault(profile, Diot())
+                pool[profile].update_recursively(value)
+
+        if base and base not in pool and not allow_missing_base:
+            raise ValueError(f"Base profile '{base}' not found")
+
+        if base and base in pool:
+            out = ProfileConfig.use_profile(out, base, base=base)
+
+        return out
+
+    @classmethod
     def load_one(
+        cls,
         conf: Any,
         loader: str | Loader | None = None,
         ignore_nonexist: bool = False,
@@ -184,6 +328,61 @@ class ProfileConfig:
             loader = get_loader(loader)
 
         loaded = loader.load_with_profiles(conf, ignore_nonexist)
+        for profile, value in loaded.items():
+            profile = profile.lower()
+            pool.setdefault(profile, Diot())
+            pool[profile].update_recursively(value)
+
+        if base and base not in pool and not allow_missing_base:
+            raise ValueError(f"Base profile '{base}' not found")
+
+        if base and base in pool:
+            out = ProfileConfig.use_profile(out, base, base=base)
+
+        return out
+
+    @classmethod
+    async def a_load_one(
+        cls,
+        conf: Any,
+        loader: str | Loader | None = None,
+        ignore_nonexist: bool = False,
+        base: str = "default",
+        allow_missing_base: bool = False,
+    ) -> Diot:
+        """Asynchronously load the configuration from the file
+
+        Args:
+            conf: The configuration file to load
+            loader: The loader to use. Will detect from conf by default
+            ignore_nonexist: Whether to ignore non-existent files
+                Otherwise, will raise errors
+            base: The default profile to use after loading
+            allow_missing_base: Whether to allow missing base profile
+                If False, will raise errors when the base profile is not found
+                in the loaded profiles.
+
+        Returns:
+            A Diot object with the loaded configuration
+        """
+
+        out = Diot({POOL_KEY: Diot()})
+        pool = out[POOL_KEY]
+        out[META_KEY] = {
+            "current_profile": None,
+            "base_profile": None,
+        }
+
+        if loader is None:
+            if hasattr(conf, "read"):
+                raise ValueError("'loader' must be specified for stream")
+
+            ext = config_to_ext(conf)
+            loader = get_loader(ext)
+        else:
+            loader = get_loader(loader)
+
+        loaded = await loader.a_load_with_profiles(conf, ignore_nonexist)
         for profile, value in loaded.items():
             profile = profile.lower()
             pool.setdefault(profile, Diot())
