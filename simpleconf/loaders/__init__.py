@@ -16,12 +16,12 @@ class Loader(ABC):
     def _convert_path(conf: str | Path) -> Path:
         """Convert the conf to Path if it is a string"""
         try:
-            from yunpath import AnyPath
+            from panpath import PanPath
         except ImportError:
-            AnyPath = Path
+            PanPath = Path
 
         if isinstance(conf, str):
-            return AnyPath(conf)
+            return PanPath(conf)
         return conf
 
     @abstractmethod
