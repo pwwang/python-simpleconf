@@ -49,11 +49,10 @@ class TomlLoader(Loader):
 
         async with self.__class__._convert_path(conf).a_open("rb") as f:
             content = await f.read()
-            if toml.__name__ in ("tomli", "tomllib"):  # pragma: no cover
+            try:
                 return toml.loads(content)
-            else:  # rtoml
-                if isinstance(content, bytes):  # pragma: no cover
-                    content = content.decode()
+            except TypeError:
+                content = content.decode()
                 return toml.loads(content)
 
 
