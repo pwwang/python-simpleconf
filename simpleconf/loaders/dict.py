@@ -19,7 +19,7 @@ class DictLoader(Loader):
         return conf
 
 
-class DictsLoader(NoConvertingPathMixin, DictLoader):
+class DictsLoader(NoConvertingPathMixin, DictLoader):  # type: ignore[misc]
     """Dict string loader"""
 
     def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:

@@ -45,7 +45,10 @@ class IniLoader(Loader):
         if not self._exists(conf, ignore_nonexist):
             return {"default": {}}
 
-        return iniconfig.IniConfig(conf).sections
+        conf = self.__class__._convert_path(conf)
+        content = conf.read_text()
+
+        return iniconfig.IniConfig(conf, content).sections
 
     async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Asynchronously load the configuration from an ini-like file"""
@@ -60,7 +63,10 @@ class IniLoader(Loader):
         if not await self._a_exists(conf, ignore_nonexist):
             return {"default": {}}
 
-        return iniconfig.IniConfig(conf).sections
+        conf = self.__class__._convert_path(conf)
+        content = await conf.a_read_text()
+
+        return iniconfig.IniConfig(conf, content).sections
 
     @classmethod
     def _convert(  # type: ignore[override]
@@ -100,7 +106,7 @@ class IniLoader(Loader):
         return out
 
 
-class InisLoader(NoConvertingPathMixin, IniLoader):
+class InisLoader(NoConvertingPathMixin, IniLoader):  # type: ignore[misc]
     """Ini-like string loader"""
 
     def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:

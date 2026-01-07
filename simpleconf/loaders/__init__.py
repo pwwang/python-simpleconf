@@ -52,7 +52,7 @@ class Loader(ABC):
     async def _a_exists(self, conf: str | Path, ignore_exist: bool) -> bool:
         """Asynchronously check if the configuration file exists"""
         path = self.__class__._convert_path(conf)
-        exists = await path.a_exists()
+        exists = await path.a_exists()  # type: ignore[attr-defined]
         if not ignore_exist and not exists:
             raise FileNotFoundError(f"{conf} does not exist")
         return exists
@@ -131,4 +131,4 @@ class NoConvertingPathMixin(ABC):
 
     async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Asynchronously load the configuration from a toml file"""
-        return self.loading(conf, ignore_nonexist)
+        return self.loading(conf, ignore_nonexist)  # type: ignore[attr-defined]

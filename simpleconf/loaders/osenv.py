@@ -18,7 +18,7 @@ from ..caster import (
 )
 
 
-class OsenvLoader(NoConvertingPathMixin, Loader):
+class OsenvLoader(NoConvertingPathMixin, Loader):  # type: ignore[misc]
     """Environment variable loader"""
 
     CASTERS = [

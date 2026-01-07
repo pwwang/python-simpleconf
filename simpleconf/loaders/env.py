@@ -44,7 +44,9 @@ class EnvLoader(Loader):
         if not self._exists(conf, ignore_nonexist):
             return {}
 
-        return dotenv.main.DotEnv(conf).dict()
+        conf = self.__class__._convert_path(conf)
+        content = conf.read_text()  # so that cloud paths work
+        return dotenv.dotenv_values(stream=io.StringIO(content))
 
     async def a_loading(self, conf, ignore_nonexist):
         """Asynchronously load the configuration from a .env file"""
@@ -59,7 +61,9 @@ class EnvLoader(Loader):
         if not await self._a_exists(conf, ignore_nonexist):
             return {}
 
-        return dotenv.main.DotEnv(conf).dict()
+        conf = self.__class__._convert_path(conf)
+        content = await conf.a_read_text()  # so that cloud paths work
+        return dotenv.dotenv_values(stream=io.StringIO(content))
 
     @classmethod
     def _convert_with_profiles(  # type: ignore[override]
@@ -79,7 +83,7 @@ class EnvLoader(Loader):
         return cast(out, cls.CASTERS)
 
 
-class EnvsLoader(NoConvertingPathMixin, EnvLoader):
+class EnvsLoader(NoConvertingPathMixin, EnvLoader):  # type: ignore[misc]
     """Env string loader"""
 
     def loading(self, conf: Any, ignore_nonexist: bool = False) -> Dict[str, Any]:

@@ -19,8 +19,8 @@ class YamlLoader(Loader):
             return {}
 
         conf = self.__class__._convert_path(conf)
-        with conf.open("r") as f:
-            return yaml.load(f, Loader=yaml.FullLoader)
+        content = conf.read_text()
+        return yaml.load(content, Loader=yaml.FullLoader)
 
     async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Asynchronously load the configuration from a yaml file"""
@@ -35,14 +35,12 @@ class YamlLoader(Loader):
         if not await self._a_exists(conf, ignore_nonexist):
             return {}
 
-        async with self.__class__._convert_path(conf).a_open() as f:
-            content = await f.read()
-            if isinstance(content, bytes):  # pragma: no cover
-                content = content.decode()
-            return yaml.load(content, Loader=yaml.FullLoader)
+        conf = self.__class__._convert_path(conf)
+        content = await conf.a_read_text()
+        return yaml.load(content, Loader=yaml.FullLoader)
 
 
-class YamlsLoader(NoConvertingPathMixin, YamlLoader):
+class YamlsLoader(NoConvertingPathMixin, YamlLoader):  # type: ignore[misc]
     """Yaml string loader"""
 
     def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
