@@ -1,5 +1,6 @@
 from typing import Any, Dict, Awaitable
 
+from panpath import PanPath
 from ..utils import require_package
 from ..caster import (
     none_caster,
@@ -27,11 +28,12 @@ class TomlLoader(Loader):
         if not self._exists(conf, ignore_nonexist):
             return {}
 
+        conf: PanPath = self.__class__._convert_path(conf)
         if toml.__name__ in ("tomli", "tomllib"):  # pragma: no cover
-            with open(conf, "rb") as f:
+            with conf.open("rb") as f:
                 return toml.load(f)
 
-        with open(conf, "r") as f:  # rtoml
+        with conf.open("r") as f:  # rtoml
             return toml.load(f)
 
     async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:

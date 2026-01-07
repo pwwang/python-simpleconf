@@ -1,6 +1,7 @@
 import json
 from typing import Any, Awaitable, Dict
 
+from panpath import PanPath
 from . import Loader, NoConvertingPathMixin
 
 
@@ -16,7 +17,8 @@ class JsonLoader(Loader):
         if not self._exists(conf, ignore_nonexist):
             return {}
 
-        with open(conf) as f:
+        conf: PanPath = self.__class__._convert_path(conf)
+        with conf.open("r") as f:
             return json.load(f)
 
     async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:

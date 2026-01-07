@@ -18,7 +18,8 @@ class YamlLoader(Loader):
         if not self._exists(conf, ignore_nonexist):
             return {}
 
-        with open(conf) as f:
+        conf = self.__class__._convert_path(conf)
+        with conf.open("r") as f:
             return yaml.load(f, Loader=yaml.FullLoader)
 
     async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
