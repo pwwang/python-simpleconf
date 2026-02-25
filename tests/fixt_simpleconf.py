@@ -62,6 +62,16 @@ k = k
 
 
 @pytest.fixture(scope="module")
+def ini_j2_file_nondefault(config_path):
+    ret = config_path / 'default.j2.ini'
+    ret.write_text("""[default]
+a = @int:{{ 1 + 1 }}
+b = @int:{{ 2 + 2 }}
+""")
+    return ret
+
+
+@pytest.fixture(scope="module")
 def env_file(config_path):
     ret = config_path / 'env.env'
     ret.write_text("""
@@ -82,9 +92,31 @@ b: 2
 
 
 @pytest.fixture(scope="module")
+def yaml_j2_file(config_path):
+    ret = config_path / 'simpleconf.j2.yaml'
+    ret.write_text("""default:
+  a: {{ 1 + 1 }}
+b: {{ 2 + 2 }}
+""")
+    return ret
+
+
+@pytest.fixture(scope="module")
 def json_file(config_path):
     ret = config_path / 'simpleconf.json'
     ret.write_text("""{"default": {"a": 1}, "b": 2}
+""")
+    return ret
+
+
+@pytest.fixture(scope="module")
+def json_liq_file(config_path):
+    ret = config_path / 'simpleconf.json.liq'
+    ret.write_text("""{
+  "default": {
+    "a": {{ 1 + 1 }}
+  }
+}
 """)
     return ret
 
@@ -95,6 +127,19 @@ def toml_file(config_path):
     ret.write_text("""b = 2
 [default]
 a = 1
+""")
+    return ret
+
+
+@pytest.fixture(scope="module")
+def toml_liq_file(config_path):
+    ret = config_path / 'simpleconf.toml.liq'
+    ret.write_text("""b = 2
+
+{% set x = 10 %}
+[default]
+a = {{ 1 + 1 }}
+b = {{ x + 2 }}
 """)
     return ret
 

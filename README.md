@@ -29,6 +29,7 @@ pip install python-simpleconf[all]
 - Profile support
 - Simple APIs
 - Async loading support
+- Templated configuration files support (jinja2 and liquid)
 
 ## Usage
 
@@ -275,3 +276,37 @@ Values are casted by `ast.literal_eval()`.
 #### TOML caster
 
 `@toml:a = 1` -> `{"a": 1}`
+
+### Templated configuration files
+
+`jinja2` and `liquid` templating engines are supported. The templating engine is determined by the file extension, which can be either the primary or secondary suffix. For example, `config.toml.j2` and `config.j2.toml` are both treated as TOML files with Jinja2 templating.
+
+`config.toml.j2`
+
+```toml
+a = {{ 1 + 2 }}
+```
+
+```python
+from simpleconf import Config
+
+conf = Config.load('config.toml.j2')
+# conf.a == 3
+```
+
+`config.liq.toml`
+
+```toml
+{% for i in range(1, 3) %}
+[section{{i}}]
+a = {{i}}
+{% endfor %}
+```
+
+```python
+from simpleconf import Config
+
+conf = Config.load('config.liq.toml')
+# conf.section1.a == 1
+# conf.section2.a == 2
+```

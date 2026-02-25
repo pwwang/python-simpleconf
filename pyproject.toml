@@ -26,6 +26,8 @@ rtoml = {version = "^0.12", optional = true, platform = "linux"}
 tomli = {version = "^2.0", optional = true, markers = 'sys_platform != "linux"'}
 iniconfig = {version = "^2.0", optional = true}
 aiofiles = {version = ">=23.0.0", optional = true}
+jinja2 = {version = "^3.0", optional = true}
+liquidpy = {version = "^0.8", optional = true}
 
 [tool.poetry.extras]
 ini = [ "iniconfig" ]
@@ -33,6 +35,9 @@ env = [ "python-dotenv"]
 yaml = [ "pyyaml"]
 toml = [ "rtoml", "tomli"]
 async = [ "aiofiles"]
+jinja2 = [ "jinja2"]
+liquid = [ "liquidpy"]
+liquidpy = [ "liquidpy"]
 all = [ "iniconfig", "python-dotenv", "pyyaml", "rtoml", "tomli"]
 
 [tool.poetry.group.dev.dependencies]

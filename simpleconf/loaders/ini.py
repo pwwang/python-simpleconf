@@ -17,12 +17,18 @@ from ..caster import (
     json_caster,
     toml_caster,
 )
-from . import Loader, NoConvertingPathMixin
+from . import (
+    Loader,
+    NoConvertingPathMixin,
+    LoaderModifierMixin,
+    J2ModifierMixin,
+    LiqModifierMixin,
+)
 
 iniconfig = require_package("iniconfig")
 
 
-class IniLoader(Loader):
+class IniLoader(Loader, LoaderModifierMixin):
     """Ini-like file loader"""
 
     CASTERS = [
@@ -47,7 +53,7 @@ class IniLoader(Loader):
 
         conf = self.__class__._convert_path(conf)
         content = conf.read_text()
-
+        content = self._modifier(content)
         return iniconfig.IniConfig(conf, content).sections
 
     async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
@@ -58,6 +64,7 @@ class IniLoader(Loader):
                 content = await content
             if isinstance(content, bytes):
                 content = content.decode()
+            content = self._modifier(content)
             return iniconfig.IniConfig("<config>", content).sections
 
         if not await self._a_exists(conf, ignore_nonexist):
@@ -65,7 +72,7 @@ class IniLoader(Loader):
 
         conf = self.__class__._convert_path(conf)
         content = await conf.a_read_text()
-
+        content = self._modifier(content)
         return iniconfig.IniConfig(conf, content).sections
 
     @classmethod
@@ -112,3 +119,11 @@ class InisLoader(NoConvertingPathMixin, IniLoader):  # type: ignore[misc]
     def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Load the configuration from an ini-like file"""
         return iniconfig.IniConfig("<config>", conf).sections
+
+
+class IniJ2Loader(IniLoader, J2ModifierMixin):
+    """Ini-like file loader with Jinja2 support"""
+
+
+class IniLiqLoader(IniLoader, LiqModifierMixin):
+    """Ini-like file loader with Liquid support"""

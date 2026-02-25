@@ -132,3 +132,29 @@ class NoConvertingPathMixin(ABC):
     async def a_loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:
         """Asynchronously load the configuration from a toml file"""
         return self.loading(conf, ignore_nonexist)  # type: ignore[attr-defined]
+
+
+class LoaderModifierMixin(ABC):
+    """Loader mixin class with content modifier"""
+
+    def _modifier(self, content: str | bytes) -> str | bytes:
+        """Modify the content of the configuration file before loading"""
+        return content
+
+
+class J2ModifierMixin(LoaderModifierMixin):
+    """Loader mixin class with Jinja2 content modifier"""
+
+    def _modifier(self, content: str | bytes) -> str | bytes:
+        """Modify the content of the configuration file before loading"""
+        from jinja2 import Template
+        return Template(content).render()
+
+
+class LiqModifierMixin(LoaderModifierMixin):
+    """Loader mixin class with Liquid content modifier"""
+
+    def _modifier(self, content: str | bytes) -> str | bytes:
+        """Modify the content of the configuration file before loading"""
+        from liquid import Liquid
+        return Liquid(content, from_file=False, mode="wild").render()

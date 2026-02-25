@@ -16,12 +16,18 @@ from ..caster import (
     json_caster,
     toml_caster,
 )
-from . import Loader, NoConvertingPathMixin
+from . import (
+    Loader,
+    NoConvertingPathMixin,
+    LoaderModifierMixin,
+    J2ModifierMixin,
+    LiqModifierMixin,
+)
 
 dotenv = require_package("dotenv")
 
 
-class EnvLoader(Loader):
+class EnvLoader(Loader, LoaderModifierMixin):
     """Env file loader"""
 
     CASTERS = [
@@ -46,6 +52,7 @@ class EnvLoader(Loader):
 
         conf = self.__class__._convert_path(conf)
         content = conf.read_text()  # so that cloud paths work
+        content = self._modifier(content)
         return dotenv.dotenv_values(stream=io.StringIO(content))
 
     async def a_loading(self, conf, ignore_nonexist):
@@ -56,6 +63,7 @@ class EnvLoader(Loader):
                 content = await content
             if isinstance(content, bytes):
                 content = content.decode()
+            content = self._modifier(content)
             return dotenv.dotenv_values(stream=io.StringIO(content))
 
         if not await self._a_exists(conf, ignore_nonexist):
@@ -63,6 +71,7 @@ class EnvLoader(Loader):
 
         conf = self.__class__._convert_path(conf)
         content = await conf.a_read_text()  # so that cloud paths work
+        content = self._modifier(content)
         return dotenv.dotenv_values(stream=io.StringIO(content))
 
     @classmethod
@@ -89,3 +98,11 @@ class EnvsLoader(NoConvertingPathMixin, EnvLoader):  # type: ignore[misc]
     def loading(self, conf: Any, ignore_nonexist: bool = False) -> Dict[str, Any]:
         """Load the configuration from a .env file"""
         return dotenv.dotenv_values(stream=io.StringIO(conf))
+
+
+class EnvJ2Loader(EnvLoader, J2ModifierMixin):
+    """Env file loader with Jinja2 support"""
+
+
+class EnvLiqLoader(EnvLoader, LiqModifierMixin):
+    """Env file loader with Liquid support"""

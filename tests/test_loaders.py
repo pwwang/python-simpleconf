@@ -163,6 +163,13 @@ def test_ini_loader(ini_file_noprofile, ini_file, ini_file_nodefault):
     assert loaded == {}
 
 
+def test_ini_j2_loader(ini_j2_file_nondefault):
+    loader = get_loader("ini.j2")
+    loaded = loader.load(ini_j2_file_nondefault)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"a": 2, "b": 4}
+
+
 async def test_ini_a_loader(ini_file_noprofile, ini_file, ini_file_nodefault):
     loader = get_loader("ini")
     loaded = await loader.a_load(ini_file_noprofile)
@@ -289,6 +296,14 @@ def test_json_loader(json_file):
     assert loaded == {}
 
 
+def test_json_liq_loader(json_liq_file):
+    loader = get_loader("json.liq")
+
+    loaded = loader.load(json_liq_file)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"default": {"a": 2}}
+
+
 async def test_json_a_loader(json_file):
     loader = get_loader("json")
 
@@ -343,6 +358,21 @@ def test_toml_loader(toml_file):
     assert loaded == {}
 
 
+def test_toml_liq_loader(toml_liq_file):
+    loader = get_loader("toml.liq")
+
+    loaded = loader.load(toml_liq_file)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"b": 2, "default": {"a": 2, "b": 12}}
+
+    loaded = loader.load_with_profiles(toml_liq_file)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"b": 2, "default": {"a": 2, "b": 12}}
+
+    loaded = loader.load("toml_liq_file_not_exist", ignore_nonexist=True)
+    assert loaded == {}
+
+
 async def test_toml_a_loader(toml_file):
     loader = get_loader("toml")
 
@@ -394,6 +424,21 @@ def test_yaml_loader(yaml_file):
     assert loaded == {"default": {"a": 1}, "b": 2}
 
     loaded = loader.load("yaml_file_not_exist", ignore_nonexist=True)
+    assert loaded == {}
+
+
+def test_yaml_j2_loader(yaml_j2_file):
+    loader = get_loader("yaml.j2")
+
+    loaded = loader.load(yaml_j2_file)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"default": {"a": 2}, "b": 4}
+
+    loaded = loader.load_with_profiles(yaml_j2_file)
+    assert isinstance(loaded, Diot)
+    assert loaded == {"default": {"a": 2}, "b": 4}
+
+    loaded = loader.load("yaml_j2_file_not_exist", ignore_nonexist=True)
     assert loaded == {}
 
 
