@@ -59,11 +59,11 @@ class TomlLoader(Loader, LoaderModifierMixin):
 
         conf = self.__class__._convert_path(conf)
         content = await conf.a_read_bytes()
-        content = self._modifier(content)
         try:
-            return toml.loads(content)
-        except TypeError:
+            return toml.loads(self._modifier(content))
+        except Exception:  # TypeError, TemplateSyntaxError
             content = content.decode()
+            content = self._modifier(content)
             return toml.loads(content)
 
 
