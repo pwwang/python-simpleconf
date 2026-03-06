@@ -145,5 +145,62 @@ b = {{ x + 2 }}
 
 
 @pytest.fixture(scope="module")
+def toml_with_liq_directive(config_path):
+    ret = config_path / 'directive_liq.toml'
+    ret.write_text(
+        "# simpleconf-loader: liq\n"
+        "b = 2\n"
+        "\n"
+        "{% set x = 10 %}\n"
+        "[default]\n"
+        "a = {{ 1 + 1 }}\n"
+        "b = {{ x + 2 }}\n"
+    )
+    return ret
+
+
+@pytest.fixture(scope="module")
+def toml_profile_with_liq_directive(config_path):
+    ret = config_path / 'directive_liq_profile.toml'
+    ret.write_text(
+        "# simpleconf-loader: liq\n"
+        "\n"
+        "{% set x = 10 %}\n"
+        "[default]\n"
+        "a = {{ 1 + 1 }}\n"
+        "b = {{ x + 2 }}\n"
+    )
+    return ret
+
+
+@pytest.fixture(scope="module")
+def yaml_with_liquid_directive(config_path):
+    ret = config_path / 'directive_liquid.yaml'
+    ret.write_text(
+        "# simpleconf-loader: liquid\n"
+        "{% set x = 5 %}\n"
+        "default:\n"
+        "  a: {{ 1 + 1 }}\n"
+        "b: {{ x + 1 }}\n"
+    )
+    return ret
+
+
+@pytest.fixture(scope="module")
+def toml_with_explicit_liq_directive(config_path):
+    ret = config_path / 'directive_explicit.toml'
+    ret.write_text(
+        "# simpleconf-loader: toml.liq\n"
+        "b = 2\n"
+        "\n"
+        "{% set x = 10 %}\n"
+        "[default]\n"
+        "a = {{ 1 + 1 }}\n"
+        "b = {{ x + 2 }}\n"
+    )
+    return ret
+
+
+@pytest.fixture(scope="module")
 def dict_obj():
     return {"default": {"a": 1}, "b": 2}

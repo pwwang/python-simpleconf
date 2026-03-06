@@ -310,3 +310,57 @@ conf = Config.load('config.liq.toml')
 # conf.section1.a == 1
 # conf.section2.a == 2
 ```
+#### Loader directive in the first line
+
+Instead of using a special file extension, you can embed a loader directive in the **first line** of a configuration file as a comment. This allows a plain `config.toml` to be processed by the Liquid engine without renaming the file.
+
+The directive format is:
+
+```
+# simpleconf-loader: <loader>
+```
+
+Supported comment prefixes: `#`, `;`, `//` (case-insensitive).
+
+The `<loader>` value can be:
+
+| Value | Meaning |
+|---|---|
+| `liq` or `liquid` | Use the Liquid loader for this file's format |
+| `j2`, `jinja`, or `jinja2` | Use the Jinja2 loader for this file's format |
+| A full extension (e.g. `toml.liq`) | Use the exact loader specified |
+
+**Example — Liquid in a plain `.toml` file:**
+
+`config.toml`
+```toml
+# simpleconf-loader: liq
+{% set x = 10 %}
+[default]
+a = {{ 1 + 1 }}
+b = {{ x + 2 }}
+```
+
+```python
+from simpleconf import Config
+
+conf = Config.load('config.toml')
+# conf.default.a == 2
+# conf.default.b == 12
+```
+
+**Example — Jinja2 in a plain `.yaml` file:**
+
+`config.yaml`
+```yaml
+# simpleconf-loader: j2
+default:
+  a: {{ 1 + 1 }}
+```
+
+```python
+from simpleconf import Config
+
+conf = Config.load('config.yaml')
+# conf.default.a == 2
+```

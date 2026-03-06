@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from importlib import import_module
 from types import ModuleType
@@ -10,6 +11,67 @@ from .loaders import Loader
 
 POOL_KEY = "_SIMPLECONF_POOL"
 META_KEY = "_SIMPLECONF_META"
+
+_LOADER_DIRECTIVE_RE = re.compile(
+    r"^\s*(?:#|;|//)\s*simpleconf-loader:\s*(\S+)",
+    re.IGNORECASE,
+)
+
+
+def detect_loader_directive(conf: Any, current_ext: str) -> str:
+    """Detect if the first line of a config file contains a loader directive.
+
+    Supports comment styles::
+
+        # simpleconf-loader: toml.liq
+        # simpleconf-loader: liq
+        # simpleconf-loader: liquid
+        ; simpleconf-loader: ini.liq
+        // simpleconf-loader: json.j2
+
+    Short aliases ``liq``/``liquid`` and ``j2``/``jinja``/``jinja2`` are
+    expanded relative to the base format of *current_ext*.
+    Any other value is used verbatim as the loader extension.
+
+    Args:
+        conf: The configuration source.  Dicts and stream objects are
+            ignored (returns *current_ext* unchanged).
+        current_ext: The extension string already derived from the filename.
+
+    Returns:
+        The overriding extension string, or *current_ext* when no directive
+        is present.
+    """
+    if isinstance(conf, dict) or hasattr(conf, "read"):
+        return current_ext
+
+    path = Path(conf)
+    if not path.exists():
+        return current_ext
+
+    try:
+        first_line = path.read_text(errors="replace").split("\n", 1)[0]
+    except Exception:
+        return current_ext
+
+    match = _LOADER_DIRECTIVE_RE.match(first_line)
+    if not match:
+        return current_ext
+
+    directive = match.group(1).lower()
+
+    # Derive the base format name (strip any existing template suffix)
+    parts = current_ext.split(".")
+    base_ext = parts[0] if parts[-1] in ("j2", "liq") else current_ext
+
+    if directive in ("liq", "liquid"):
+        return base_ext + ".liq"
+
+    if directive in ("j2", "jinja", "jinja2"):
+        return base_ext + ".j2"
+
+    # Treat as an explicit loader extension name
+    return directive
 
 
 def config_to_ext(conf: Any, secondary: bool = True) -> str:

@@ -5,7 +5,7 @@ from typing import Any, List, Generator, Union, Sequence
 
 from diot import Diot
 
-from .utils import config_to_ext, get_loader, POOL_KEY, META_KEY
+from .utils import config_to_ext, detect_loader_directive, get_loader, POOL_KEY, META_KEY
 from .loaders import Loader
 
 LoaderType = Union[str, Loader, None]
@@ -116,6 +116,7 @@ class Config:
                 raise ValueError("'loader' must be specified for stream")
 
             ext = config_to_ext(config)
+            ext = detect_loader_directive(config, ext)
             loader = get_loader(ext)
         else:
             loader = get_loader(loader)
@@ -145,6 +146,7 @@ class Config:
                 raise ValueError("'loader' must be specified for stream")
 
             ext = config_to_ext(config)
+            ext = detect_loader_directive(config, ext)
             loader = get_loader(ext)
         else:
             loader = get_loader(loader)
@@ -202,6 +204,7 @@ class ProfileConfig:
 
             if lder is None:
                 ext = config_to_ext(conf)
+                ext = detect_loader_directive(conf, ext)
                 lder = get_loader(ext)
             else:
                 lder = get_loader(lder)
@@ -271,6 +274,7 @@ class ProfileConfig:
 
             if lder is None:
                 ext = config_to_ext(conf)
+                ext = detect_loader_directive(conf, ext)
                 lder = get_loader(ext)
             else:
                 lder = get_loader(lder)
@@ -323,6 +327,7 @@ class ProfileConfig:
                 raise ValueError("'loader' must be specified for stream")
 
             ext = config_to_ext(conf)
+            ext = detect_loader_directive(conf, ext)
             loader = get_loader(ext)
         else:
             loader = get_loader(loader)
@@ -378,6 +383,7 @@ class ProfileConfig:
                 raise ValueError("'loader' must be specified for stream")
 
             ext = config_to_ext(conf)
+            ext = detect_loader_directive(conf, ext)
             loader = get_loader(ext)
         else:
             loader = get_loader(loader)

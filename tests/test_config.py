@@ -3,7 +3,6 @@ import pytest
 
 from simpleconf import Config, ProfileConfig
 
-
 pytest_plugins = ["tests.fixt_simpleconf"]
 
 
@@ -321,3 +320,38 @@ def test_detach():
     assert len(diot) == 2
     diot.b[0] = 10
     assert config.b == [2, 3]
+
+
+def test_loader_directive_liq(toml_with_liq_directive):
+    """First-line '# simpleconf-loader: liq' redirects to the liq loader."""
+    config = Config.load(toml_with_liq_directive)
+    assert config.default.a == 2
+    assert config.default.b == 12
+
+
+def test_loader_directive_liquid(yaml_with_liquid_directive):
+    """First-line '# simpleconf-loader: liquid' redirects to the liq loader."""
+    config = Config.load(yaml_with_liquid_directive)
+    assert config.default.a == 2
+    assert config.b == 6
+
+
+def test_loader_directive_explicit(toml_with_explicit_liq_directive):
+    """First-line '# simpleconf-loader: toml.liq' redirects explicitly."""
+    config = Config.load(toml_with_explicit_liq_directive)
+    assert config.default.a == 2
+    assert config.default.b == 12
+
+
+async def test_async_loader_directive(toml_with_liq_directive):
+    """Async loading also honours the first-line directive."""
+    config = await Config.a_load(toml_with_liq_directive)
+    assert config.default.a == 2
+    assert config.default.b == 12
+
+
+def test_profile_loader_directive_liq(toml_profile_with_liq_directive):
+    """ProfileConfig.load also honours the first-line directive."""
+    config = ProfileConfig.load(toml_profile_with_liq_directive)
+    assert config.a == 2
+    assert config.b == 12

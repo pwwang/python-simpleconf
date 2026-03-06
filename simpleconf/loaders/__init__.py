@@ -148,7 +148,7 @@ class J2ModifierMixin(LoaderModifierMixin):
     def _modifier(self, content: str | bytes) -> str | bytes:
         """Modify the content of the configuration file before loading"""
         from jinja2 import Template
-        return Template(content).render()
+        return Template(content).render()  # type: ignore
 
 
 class LiqModifierMixin(LoaderModifierMixin):
@@ -156,5 +156,5 @@ class LiqModifierMixin(LoaderModifierMixin):
 
     def _modifier(self, content: str | bytes) -> str | bytes:
         """Modify the content of the configuration file before loading"""
-        from liquid import Liquid
+        from liquid import Liquid  # type: ignore[import]
         return Liquid(content, from_file=False, mode="wild").render()
