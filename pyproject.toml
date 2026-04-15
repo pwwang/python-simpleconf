@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "python-simpleconf"
-version = "0.9.3a"
+version = "0.9.3a1"
 description = "Simple configuration management with python."
 authors = [{name = "pwwang", email = "pwwang@pwwang.com"}]
 license = {text = "MIT"}
