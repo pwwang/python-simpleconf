@@ -1810,7 +1810,7 @@ wheels = [
 
 [[package]]
 name = "python-simpleconf"
-version = "0.9.2"
+version = "0.9.3"
 source = { editable = "." }
 dependencies = [
     { name = "diot" },
