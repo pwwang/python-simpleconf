@@ -7,7 +7,7 @@ class DictLoader(Loader):
     """Dict loader"""
 
     @staticmethod
-    def _convert_path(conf):
+    def _convert_path(conf: Any) -> Any:  # type: ignore[override]
         return conf
 
     def loading(self, conf: Any, ignore_nonexist: bool) -> Dict[str, Any]:

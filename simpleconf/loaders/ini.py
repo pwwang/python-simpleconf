@@ -99,7 +99,7 @@ class IniLoader(Loader, LoaderModifierMixin):
         if len(keys) == 0 or keys[0].lower() != "default":
             raise ValueError(f"{pathname}: Only the default section can be loaded.")
 
-        return cast(Diot(loaded[keys[0]]), cls.CASTERS)
+        return cast(Diot(loaded[keys[0]]), cls.CASTERS or [])
 
     @classmethod
     def _convert_with_profiles(  # type: ignore[override]
@@ -109,7 +109,7 @@ class IniLoader(Loader, LoaderModifierMixin):
     ) -> Diot:
         out = Diot()
         for k, v in loaded.items():
-            out[k.lower()] = cast(v, cls.CASTERS)
+            out[k.lower()] = cast(v, cls.CASTERS or [])
         return out
 
 

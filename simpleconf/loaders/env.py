@@ -45,15 +45,19 @@ class EnvLoader(Loader, LoaderModifierMixin):
         """Load the configuration from a .env file"""
         if hasattr(conf, "read"):
             content = conf.read()
-            return dotenv.dotenv_values(stream=io.StringIO(content))
+            str_content = content.decode() if isinstance(content, bytes) else content
+            sio = io.StringIO(str_content)  # type: ignore[arg-type]
+            return dotenv.dotenv_values(stream=sio)
 
         if not self._exists(conf, ignore_nonexist):
             return {}
 
         conf = self.__class__._convert_path(conf)
         content = conf.read_text()  # so that cloud paths work
-        content = self._modifier(content)
-        return dotenv.dotenv_values(stream=io.StringIO(content))
+        modified = self._modifier(content)
+        str_modified = modified.decode() if isinstance(modified, bytes) else modified
+        sio = io.StringIO(str_modified)  # type: ignore[arg-type]
+        return dotenv.dotenv_values(stream=sio)
 
     async def a_loading(self, conf, ignore_nonexist):
         """Asynchronously load the configuration from a .env file"""
@@ -63,16 +67,21 @@ class EnvLoader(Loader, LoaderModifierMixin):
                 content = await content
             if isinstance(content, bytes):
                 content = content.decode()
-            content = self._modifier(content)
-            return dotenv.dotenv_values(stream=io.StringIO(content))
+            modified = self._modifier(content)
+            str_modified = modified.decode() if isinstance(modified, bytes) else modified
+            sio = io.StringIO(str_modified)  # type: ignore[arg-type]
+            return dotenv.dotenv_values(stream=sio)
 
         if not await self._a_exists(conf, ignore_nonexist):
             return {}
 
         conf = self.__class__._convert_path(conf)
-        content = await conf.a_read_text()  # so that cloud paths work
-        content = self._modifier(content)
-        return dotenv.dotenv_values(stream=io.StringIO(content))
+        # so that cloud paths work
+        content = await conf.a_read_text()  # type: ignore[attr-defined]
+        modified = self._modifier(content)
+        str_modified = modified.decode() if isinstance(modified, bytes) else modified
+        sio = io.StringIO(str_modified)  # type: ignore[arg-type]
+        return dotenv.dotenv_values(stream=sio)
 
     @classmethod
     def _convert_with_profiles(  # type: ignore[override]
@@ -89,7 +98,7 @@ class EnvLoader(Loader, LoaderModifierMixin):
             profile = profile.lower()
             out.setdefault(profile, Diot())[key] = v
 
-        return cast(out, cls.CASTERS)
+        return cast(out, cls.CASTERS or [])
 
 
 class EnvsLoader(NoConvertingPathMixin, EnvLoader):  # type: ignore[misc]

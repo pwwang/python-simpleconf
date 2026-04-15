@@ -157,4 +157,6 @@ class LiqModifierMixin(LoaderModifierMixin):
     def _modifier(self, content: str | bytes) -> str | bytes:
         """Modify the content of the configuration file before loading"""
         from liquid import Liquid  # type: ignore[import]
-        return Liquid(content, from_file=False, mode="wild").render()
+        str_content = content.decode() if isinstance(content, bytes) else content
+        liq = Liquid(str_content, from_file=False, mode="wild")  # type: ignore
+        return liq.render()
