@@ -1,50 +1,57 @@
 [build-system]
-requires = [ "poetry>=2",]
-build-backend = "poetry.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "python-simpleconf"
 version = "0.9.2"
 description = "Simple configuration management with python."
-authors = [ "pwwang <pwwang@pwwang.com>",]
-license = "MIT"
+authors = [{name = "pwwang", email = "pwwang@pwwang.com"}]
+license = {text = "MIT"}
 readme = "README.md"
-homepage = "https://github.com/pwwang/simpleconf"
-repository = "https://github.com/pwwang/simpleconf"
-packages = [
-    {include = "simpleconf"}
+requires-python = ">=3.9"
+dependencies = [
+    "diot>=0.3.3,<0.4",
+    "panpath>=0.4.8,<0.5",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-diot = "^0.3.3"
-python-dotenv = { version="^1.1", optional = true}
-pyyaml = { version="^6", optional = true}
-panpath = "^0.4.8"
+[project.urls]
+Homepage = "https://github.com/pwwang/simpleconf"
+Repository = "https://github.com/pwwang/simpleconf"
+
+[project.optional-dependencies]
+ini = ["iniconfig>=2.0,<3"]
+env = ["python-dotenv>=1.1,<2"]
+yaml = ["pyyaml>=6,<7"]
 # Use rtoml only when the wheel is available (linux)
-rtoml = {version = "^0.12", optional = true, platform = "linux"}
-tomli = {version = "^2.0", optional = true, markers = 'sys_platform != "linux"'}
-iniconfig = {version = "^2.0", optional = true}
-aiofiles = {version = ">=23.0.0", optional = true}
-jinja2 = {version = "^3.0", optional = true}
-liquidpy = {version = "^0.8", optional = true}
+toml = [
+    "rtoml>=0.12,<0.13; sys_platform == 'linux'",
+    "tomli>=2.0,<3; sys_platform != 'linux'",
+]
+async = ["aiofiles>=23.0.0"]
+jinja2 = ["jinja2>=3.0,<4"]
+liquid = ["liquidpy>=0.8,<0.9"]
+liquidpy = ["liquidpy>=0.8,<0.9"]
+all = [
+    "iniconfig>=2.0,<3",
+    "python-dotenv>=1.1,<2",
+    "pyyaml>=6,<7",
+    "rtoml>=0.12,<0.13; sys_platform == 'linux'",
+    "tomli>=2.0,<3; sys_platform != 'linux'",
+]
 
-[tool.poetry.extras]
-ini = [ "iniconfig" ]
-env = [ "python-dotenv"]
-yaml = [ "pyyaml"]
-toml = [ "rtoml", "tomli"]
-async = [ "aiofiles"]
-jinja2 = [ "jinja2"]
-liquid = [ "liquidpy"]
-liquidpy = [ "liquidpy"]
-all = [ "iniconfig", "python-dotenv", "pyyaml", "rtoml", "tomli"]
+[tool.hatch.build.targets.wheel]
+packages = ["simpleconf"]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8"
-pytest-cov = "^6"
-pytest-asyncio = "^1"
-backports-asyncio-runner = {version = "^1.1.0", python = "<3.11"}
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=6",
+    "pytest-asyncio>=1",
+    "backports-asyncio-runner>=1.1.0; python_version < '3.11'",
+    "liquidpy>=0.8,<0.9",
+    "panpath[all-async]>=0.4.10",
+]
 
 [tool.pytest.ini_options]
 addopts = "-vv --cov=simpleconf --cov-report xml:cov.xml --cov-report term-missing"
