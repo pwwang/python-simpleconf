@@ -51,6 +51,7 @@ dev = [
     "backports-asyncio-runner>=1.1.0; python_version < '3.11'",
     "liquidpy>=0.8,<0.9",
     "panpath[all-async]>=0.4.10",
+    "flake8>=7.3.0",
 ]
 
 [tool.pytest.ini_options]
