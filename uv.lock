@@ -1480,14 +1480,14 @@ wheels = [
 
 [[package]]
 name = "panpath"
-version = "0.4.10"
+version = "0.4.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ff/3c/85a84c9892b8a0721f25f097f5419bcae901a0451094736f91c4727e8d0f/panpath-0.4.10.tar.gz", hash = "sha256:a031285efe63e84b0da66bd76126908f4e7edd7e81f3f29adf95fd4d14f2cc38", size = 46520, upload-time = "2026-02-07T02:10:40.401Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2f/a9/91854a72f1240629a1272d42fcd37d28e030cfa7c89fc9f5592a5058e105/panpath-0.4.11.tar.gz", hash = "sha256:c2b0ed083aff6ec7345ce0fc5d8394ac949011e6030d77d9285c19ba5b194f08", size = 79519, upload-time = "2026-04-16T21:49:56.961Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d2/24/ae7436e41afc66d4185a5261246bfea1e52ccde3f6088615201599adf0bc/panpath-0.4.10-py3-none-any.whl", hash = "sha256:0f8d20733747996c7ef0c07798ce918fa362f4e7ea3f123691eac635bc6e3519", size = 64002, upload-time = "2026-02-07T02:10:42.315Z" },
+    { url = "https://files.pythonhosted.org/packages/ac/92/99d61965b8352d1c241fc1fec88362d6b2ebca2d4dd3cc3d71ea33d034c1/panpath-0.4.11-py3-none-any.whl", hash = "sha256:aaa461f1670be7b55851c5aa74f222cf40db057b6a8e779490fb7b12472d39c2", size = 64854, upload-time = "2026-04-16T21:49:55.716Z" },
 ]
 
 [package.optional-dependencies]
@@ -1924,7 +1924,7 @@ requires-dist = [
     { name = "pyyaml", marker = "extra == 'all'", specifier = ">=6,<7" },
     { name = "pyyaml", marker = "extra == 'yaml'", specifier = ">=6,<7" },
     { name = "rtoml", marker = "sys_platform == 'linux' and extra == 'all'", specifier = ">=0.12,<0.13" },
-    { name = "rtoml", marker = "sys_platform == 'linux' and extra == 'toml'", specifier = ">=0.12,<0.13" },
+    { name = "rtoml", marker = "sys_platform == 'linux' and extra == 'toml'", specifier = ">=0.12,<1" },
     { name = "tomli", marker = "sys_platform != 'linux' and extra == 'all'", specifier = ">=2.0,<3" },
     { name = "tomli", marker = "sys_platform != 'linux' and extra == 'toml'", specifier = ">=2.0,<3" },
 ]
